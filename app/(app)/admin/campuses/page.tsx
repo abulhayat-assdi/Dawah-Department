@@ -1,0 +1,86 @@
+import { requireAdmin } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
+import {
+  Card,
+  CardHeader,
+  PageHeader,
+  Label,
+  Input,
+  Textarea,
+  Button,
+  EmptyState,
+} from "@/components/ui";
+import { createCampus, deleteCampus } from "./actions";
+import type { Campus } from "@/lib/types";
+
+export default async function CampusesPage() {
+  await requireAdmin();
+  const supabase = await createClient();
+  const { data } = await supabase.from("campuses").select("*").order("name");
+  const campuses = (data ?? []) as Campus[];
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Campus Management"
+        subtitle="Add and manage the campuses of the Dawah Department."
+      />
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader title="Campus List" subtitle={`${campuses.length} total`} />
+          {campuses.length === 0 ? (
+            <EmptyState icon="🏛️" title="No campuses yet" />
+          ) : (
+            <ul className="divide-y divide-slate-50">
+              {campuses.map((c) => (
+                <li
+                  key={c.id}
+                  className="flex items-center justify-between gap-3 px-5 py-4"
+                >
+                  <div>
+                    <p className="font-semibold text-slate-900">{c.name}</p>
+                    <p className="text-sm text-slate-500">
+                      {c.address || "No address added"}
+                    </p>
+                  </div>
+                  <form action={deleteCampus}>
+                    <input type="hidden" name="id" value={c.id} />
+                    <Button variant="ghost" className="text-red-600">
+                      Delete
+                    </Button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        <Card className="h-fit">
+          <CardHeader title="New Campus" />
+          <form action={createCampus} className="space-y-4 p-5">
+            <div>
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" name="name" required placeholder="Kazi Bari Campus" />
+            </div>
+            <div>
+              <Label htmlFor="slug">Slug (optional)</Label>
+              <Input id="slug" name="slug" placeholder="kazibari" />
+            </div>
+            <div>
+              <Label htmlFor="address">Address</Label>
+              <Input id="address" name="address" placeholder="Kazi Bari, Dhaka" />
+            </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea id="description" name="description" />
+            </div>
+            <Button type="submit" className="w-full">
+              Add
+            </Button>
+          </form>
+        </Card>
+      </div>
+    </div>
+  );
+}

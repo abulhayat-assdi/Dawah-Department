@@ -1,36 +1,123 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ADIMS — AsSDI দাওয়াহ ইন্টিগ্রেটেড ম্যানেজমেন্ট সিস্টেম
 
-## Getting Started
+আস-সুন্নাহ স্কিল ডেভেলপমেন্ট ইনস্টিটিউট (AsSDI) দাওয়াহ বিভাগের কোর্স অগ্রগতি,
+সদস্য কার্যক্রম, টাস্ক ও রিপোর্টিং পরিচালনার জন্য একটি সম্পূর্ণ ম্যানেজমেন্ট
+সিস্টেম। `Website Proposal` + `Information` ডকুমেন্ট এবং রেফারেন্স ওয়েবসাইটের
+ডিজাইন (orange theme, Hind Siliguri বাংলা ফন্ট, 🟢🟡🔴 স্ট্যাটাস লজিক) অনুসরণ
+করে তৈরি।
 
-First, run the development server:
+> এটি একটি **প্রাথমিক (initial) বিল্ড** — পরবর্তীতে একসাথে কারেকশন করা হবে।
+
+## 🧱 টেক স্ট্যাক
+
+| অংশ          | প্রযুক্তি                                  |
+| ------------ | ----------------------------------------- |
+| ফ্রেমওয়ার্ক   | Next.js 16 (App Router, Turbopack, proxy) |
+| ভাষা          | TypeScript + React 19                     |
+| স্টাইল        | Tailwind CSS v4                           |
+| ডেটাবেজ/Auth | Supabase (Postgres + RLS + Auth)          |
+
+## 🚀 সেটআপ (ধাপে ধাপে)
+
+### ১. ডিপেন্ডেন্সি ইনস্টল
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd adims
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### ২. Supabase প্রজেক্ট তৈরি ও কনফিগার
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. <https://supabase.com> এ একটি নতুন প্রজেক্ট তৈরি করুন।
+2. `Project Settings → API` থেকে URL ও key কপি করে `.env.local` ফাইলে বসান
+   (`.env.local.example` কপি করুন):
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...        # শুধুমাত্র সার্ভার-সাইডে ব্যবহৃত
+```
 
-## Learn More
+### ৩. ডেটাবেজ স্কিমা ও সিড
 
-To learn more about Next.js, take a look at the following resources:
+Supabase Dashboard → **SQL Editor** এ গিয়ে নিচের ফাইল দুটি পরপর রান করুন:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. `supabase/schema.sql` — সকল টেবিল, এনাম, ট্রিগার, ভিউ ও **RLS পলিসি**।
+2. `supabase/seed.sql` — ক্যাম্পাস, মাস্টার কোর্স তালিকা, নমুনা ব্যাচ ও সিলেবাস।
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### ৪. প্রথম সুপার অ্যাডমিন তৈরি
 
-## Deploy on Vercel
+Dashboard → **Authentication → Users → Add user** দিয়ে একটি ইউজার তৈরি করুন,
+তারপর SQL Editor এ:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```sql
+update public.profiles
+set role = 'super_admin', full_name = 'আব্দুল কাইয়ুম'
+where id = (select id from auth.users where email = 'admin@example.com');
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+> এরপর সুপার অ্যাডমিন প্যানেলের **শিক্ষক / সদস্য** পেজ থেকেই বাকি সব সদস্যের
+> অ্যাকাউন্ট তৈরি করা যাবে (service-role key ব্যবহার করে)।
+
+### ৫. ডেভ সার্ভার চালু
+
+```bash
+npm run dev      # http://localhost:3000
+```
+
+## 👥 রোল ও অ্যাক্সেস
+
+- **super_admin (কোঅর্ডিনেটর)** — সবকিছু ম্যানেজ করে: ক্যাম্পাস, সদস্য, কোর্স,
+  সিলেবাস, ব্যাচ, টাস্ক, রিপোর্ট, রিসোর্স, মতামত।
+- **teacher (সদস্য)** — শুধু নিজের ড্যাশবোর্ড, **অ্যাসাইনকৃত ব্যাচের** অগ্রগতি
+  আপডেট, নিজের টাস্ক, দৈনিক রিপোর্ট ও প্রোফাইল।
+
+### Row-wise / Column-wise অ্যাক্সেস
+
+- **Row-wise** — একজন শিক্ষক শুধু সেই ব্যাচ আপডেট করতে পারেন যেটিতে তাকে
+  `batch_teachers` টেবিলে অ্যাসাইন করা হয়েছে। এটি Postgres **RLS** দিয়ে
+  ডেটাবেজ লেভেলে প্রয়োগ করা (`is_assigned_to_batch()` ফাংশন)।
+- **Column-wise** — কোন ফিল্ড শিক্ষক এডিট করতে পারবেন তা UI ও সার্ভার অ্যাকশন
+  নিয়ন্ত্রণ করে (শিক্ষক ক্লাস লগ/টপিক/স্ট্যাটাস আপডেট করতে পারেন, কিন্তু ব্যাচ
+  তৈরি/মুছতে বা শিক্ষক অ্যাসাইন করতে পারেন না)।
+
+## 🗂️ মূল ফিচার (ডকুমেন্ট অনুযায়ী)
+
+- **ডায়নামিক কোর্স প্রগ্রেস ট্র্যাকার** — `course_tracker` ভিউ: মোট/সম্পন্ন/বাকি
+  ক্লাস, প্রগ্রেস বার (%), মিডটার্ম/ফাইনাল 🟢🟡🔴, স্ট্যাটাস, বাকি দিন
+  (Farewell − আজ), সমাপ্তি তারিখ।
+- **ক্লাস ট্র্যাকিং** — ক্লাস লগ করলে `completed_classes` ট্রিগারে অটো-আপডেট।
+- **সিলেবাস/টপিক ট্র্যাকিং** — প্রতি কোর্সের কারিকুলাম; ব্যাচভেদে কোন টপিক শেষ।
+- **সদস্য পোর্টফোলিও ও ড্যাশবোর্ড** — ছবি, পদবি, ক্যাম্পাস ও বায়ো।
+- **টাস্ক ম্যানেজমেন্ট** — To-do / Doing / Done বোর্ড।
+- **দৈনিক রিপোর্ট** — কর্মঘণ্টা, কাউন্সেলিং, টপিক; কোঅর্ডিনেটরের মনিটরিং ও
+  "আজ যারা রিপোর্ট দেননি" তালিকা।
+- **এন্ট্রি / পিয়ার / এক্সিট অ্যাসেসমেন্ট** — প্রতি ব্যাচে।
+- **রিসোর্স সেন্টার** — স্লাইড/পিডিএফ/বই/লিংক।
+- **মতামত ও অভিযোগ** — পাবলিক ওয়েবসাইটের ফর্ম `feedback` টেবিলে জমা হয়
+  (anon insert অনুমোদিত), অ্যাডমিন ইনবক্সে দেখায়।
+
+## 📁 প্রজেক্ট স্ট্রাকচার
+
+```
+adims/
+├─ app/
+│  ├─ login/                 # লগইন (Supabase Auth)
+│  ├─ (app)/                 # auth-গার্ডেড অংশ (proxy + layout)
+│  │  ├─ dashboard/          # রোল-ভিত্তিক ড্যাশবোর্ড
+│  │  ├─ admin/…             # সুপার অ্যাডমিন প্যানেল
+│  │  ├─ my/…                # শিক্ষক প্যানেল
+│  │  └─ _actions/batch.ts   # শেয়ার্ড সার্ভার অ্যাকশন (RLS-প্রটেক্টেড)
+├─ components/               # UI কিট, app-shell, tracker-table, batch-detail
+├─ lib/                      # supabase ক্লায়েন্ট, auth, types, utils
+├─ proxy.ts                  # Next 16 middleware (session refresh + গার্ড)
+└─ supabase/                 # schema.sql + seed.sql
+```
+
+## 🔜 পরবর্তী ধাপ (কারেকশনের জন্য)
+
+- নোটিফিকেশন ডেলিভারি (রিপোর্ট না দিলে রিমাইন্ডার) — টেবিল প্রস্তুত আছে।
+- মান্থলি PDF/Word রিপোর্ট এক্সপোর্ট।
+- ছবি আপলোড (Supabase Storage)।
+- পাবলিক ওয়েবসাইট পেজ + ফিডব্যাক ফর্ম ইন্টিগ্রেশন।
+- ভয়েস/টেক্সট কমিউনিকেশন মডিউল।

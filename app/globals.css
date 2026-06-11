@@ -1,26 +1,91 @@
 @import "tailwindcss";
 
+/*
+  Dawah Department (ASSDI) design system.
+  Forest-green canvas, metallic-gold accents, subtle Islamic geometry.
+  `brand-*` is the green scale; `gold-*` is the accent scale.
+*/
+@theme {
+  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: "Amiri", "Scheherazade New", serif;
+
+  /* Brand — forest green (sampled from the reference site) */
+  --color-brand-50: #f0f7f3;
+  --color-brand-100: #d8ebe1;
+  --color-brand-200: #b3d7c5;
+  --color-brand-300: #84bca2;
+  --color-brand-400: #549a7c;
+  --color-brand-500: #2f7d5b;
+  --color-brand-600: #1c6446;
+  --color-brand-700: #14532d;
+  --color-brand-800: #0c3b2a;
+  --color-brand-900: #0a2e22;
+
+  /* Gold — metallic accent for primary CTAs and highlights */
+  --color-gold-50: #fbf7ea;
+  --color-gold-100: #f6eccd;
+  --color-gold-200: #ecd9a1;
+  --color-gold-300: #e0c275;
+  --color-gold-400: #d4af37;
+  --color-gold-500: #cfa23e;
+  --color-gold-600: #b3862c;
+  --color-gold-700: #8c6722;
+  --color-gold-800: #6b4f1e;
+
+  /* Status semantics (🟢🟡🔴 logic from the spec) */
+  --color-status-done: #16a34a;
+  --color-status-done-bg: #f0fdf4;
+  --color-status-pending: #eab308;
+  --color-status-pending-bg: #fefce8;
+  --color-status-none: #dc2626;
+  --color-status-none-bg: #fef2f2;
+  --color-status-info: #2563eb;
+  --color-status-info-bg: #eff6ff;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6f8f6; /* faint green-tinted canvas */
+  --surface: #ffffff;
+  --foreground: #0f1f18; /* near-black green */
+  --muted: #5b6b62;
+  --border: #e2e8e4;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Arabic calligraphy glyphs (Bismillah ﷽, etc.) render with a serif face. */
+.font-arabic {
+  font-family: var(--font-arabic);
+}
+
+/*
+  Subtle Islamic geometric backdrop — an 8-point star lattice rendered as an
+  inline SVG. Use on dark green panels (`.islamic-pattern`) for texture.
+*/
+.islamic-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='1'%3E%3Cpath d='M30 2l8 20 20 8-20 8-8 20-8-20-20-8 20-8z'/%3E%3Crect x='15' y='15' width='30' height='30' transform='rotate(45 30 30)'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 60px 60px;
+}
+
+/* Thin gold-tinted scrollbars for data-dense panels */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5c9 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #cbd5c9;
+  border-radius: 9999px;
 }
