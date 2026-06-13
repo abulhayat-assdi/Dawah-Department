@@ -29,6 +29,19 @@ export interface Campus {
   slug: string | null;
   address: string | null;
   description: string | null;
+  image_url: string | null;
+}
+
+export interface Faculty {
+  id: string;
+  name: string;
+  designation: string | null;
+  photo_url: string | null;
+  background: string | null;
+  location: string | null;
+  bio: string | null;
+  featured: boolean;
+  sort: number;
 }
 
 export interface Course {
@@ -76,6 +89,7 @@ export interface CourseTrackerRow {
   status: BatchStatus;
   farewell_date: string | null;
   days_left: number | null;
+  projected_days_left: number | null;
 }
 
 export interface Task {
@@ -120,7 +134,20 @@ export interface AmaliItem {
 export interface Message {
   id: string;
   sender_id: string;
+  recipient_id: string | null;
   body: string | null;
   audio_url: string | null;
+  file_url: string | null;
+  file_name: string | null;
+  is_read: boolean;
   created_at: string;
+}
+
+export interface Notice {
+  id: string;
+  title: string;
+  body: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
 }

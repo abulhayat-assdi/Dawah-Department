@@ -3,30 +3,37 @@ import {
   Card,
   CardHeader,
   StatCard,
-  PageHeader,
   EmptyState,
   TaskStatusBadge,
   Button,
 } from "@/components/ui";
 import { TrackerTable } from "@/components/tracker-table";
+import { DashboardHero } from "@/components/dashboard-hero";
+import { NoticeBoard } from "@/components/notice-board";
 import { toBn, formatDate } from "@/lib/utils";
-import type { CourseTrackerRow, Task } from "@/lib/types";
+import type { CourseTrackerRow, Task, Notice } from "@/lib/types";
 
 export function TeacherDashboard({
   name,
+  photoUrl,
   tracker,
   tasks,
   reportedToday,
+  notices,
 }: {
   name: string;
+  photoUrl?: string | null;
   tracker: CourseTrackerRow[];
   tasks: Task[];
   reportedToday: boolean;
+  notices: Notice[];
 }) {
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={`As-salamu alaykum, ${name || "Member"}`}
+      <DashboardHero
+        name={name}
+        photoUrl={photoUrl}
+        fallback="Member"
         subtitle="The batches and activities under your responsibility."
       />
 
@@ -57,6 +64,8 @@ export function TeacherDashboard({
           accent={reportedToday ? "green" : "red"}
         />
       </div>
+
+      <NoticeBoard notices={notices} isAdmin={false} />
 
       <Card>
         <CardHeader

@@ -1,7 +1,9 @@
-import { Card, CardHeader, StatCard, PageHeader, EmptyState } from "@/components/ui";
+import { Card, CardHeader, StatCard, EmptyState } from "@/components/ui";
 import { TrackerTable } from "@/components/tracker-table";
+import { DashboardHero } from "@/components/dashboard-hero";
+import { NoticeBoard } from "@/components/notice-board";
 import { toBn, formatDate } from "@/lib/utils";
-import type { CourseTrackerRow } from "@/lib/types";
+import type { CourseTrackerRow, Notice } from "@/lib/types";
 
 interface FeedbackRow {
   id: string;
@@ -12,21 +14,27 @@ interface FeedbackRow {
 
 export function AdminDashboard({
   name,
+  photoUrl,
   counts,
   tracker,
   feedback,
+  notices,
 }: {
   name: string;
+  photoUrl?: string | null;
   counts: { campuses: number; courses: number; teachers: number; batches: number };
   tracker: CourseTrackerRow[];
   feedback: FeedbackRow[];
+  notices: Notice[];
 }) {
   const ongoing = tracker.filter((t) => t.status === "ongoing").length;
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={`As-salamu alaykum, ${name || "Coordinator"}`}
+      <DashboardHero
+        name={name}
+        photoUrl={photoUrl}
+        fallback="Coordinator"
         subtitle="A one-glance overview of the entire Dawah Department."
       />
 
@@ -36,6 +44,8 @@ export function AdminDashboard({
         <StatCard label="Teachers / Members" value={toBn(counts.teachers)} icon="👥" accent="green" />
         <StatCard label="Ongoing Batches" value={toBn(ongoing)} icon="🗂️" accent="yellow" />
       </div>
+
+      <NoticeBoard notices={notices} isAdmin />
 
       <Card>
         <CardHeader

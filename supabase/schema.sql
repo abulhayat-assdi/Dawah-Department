@@ -334,7 +334,18 @@ select
   b.farewell_date,
   case when b.farewell_date is not null
        then greatest((b.farewell_date - current_date), 0)
-       else null end as days_left
+       else null end as days_left,
+  -- Velocity-based projection: at the current pace, estimated days still needed.
+  case when b.completed_classes > 0
+         and b.start_date is not null
+         and (current_date - b.start_date) > 0
+         and b.total_classes > b.completed_classes
+       then ceil(
+         (b.total_classes - b.completed_classes)::numeric
+         * (current_date - b.start_date)::numeric
+         / b.completed_classes
+       )::int
+       else null end as projected_days_left
 from public.batches b
 join public.courses c   on c.id = b.course_id
 left join public.campuses cam on cam.id = c.campus_id;

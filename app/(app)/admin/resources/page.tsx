@@ -10,6 +10,7 @@ import {
   Button,
   EmptyState,
 } from "@/components/ui";
+import { FileUpload } from "@/components/file-upload";
 import { createResource, deleteResource } from "./actions";
 import type { Course } from "@/lib/types";
 
@@ -106,7 +107,15 @@ export default async function ResourcesPage() {
               </Select>
             </div>
             <div>
-              <Label htmlFor="url">Link / URL</Label>
+              <FileUpload
+                name="file_url"
+                bucket="resources"
+                kind="file"
+                label="Upload File (PDF, slide, etc.)"
+              />
+            </div>
+            <div>
+              <Label htmlFor="url">Or paste a Link / URL</Label>
               <Input id="url" name="url" type="url" placeholder="https://" />
             </div>
             <div>

@@ -2,32 +2,34 @@
 
 /*
   Dawah Department (ASSDI) design system.
-  Forest-green canvas, metallic-gold accents, subtle Islamic geometry.
-  `brand-*` is the green scale; `gold-*` is the accent scale.
+  Vibrant emerald canvas + metallic-gold accents + Islamic geometry,
+  sampled from the As-Sunnah Dawah reference site.
+  `brand-*` is the emerald scale; `gold-*` is the accent scale.
 */
 @theme {
   --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-arabic: "Amiri", "Scheherazade New", serif;
 
-  /* Brand — forest green (sampled from the reference site) */
-  --color-brand-50: #f0f7f3;
-  --color-brand-100: #d8ebe1;
-  --color-brand-200: #b3d7c5;
-  --color-brand-300: #84bca2;
-  --color-brand-400: #549a7c;
-  --color-brand-500: #2f7d5b;
-  --color-brand-600: #1c6446;
-  --color-brand-700: #14532d;
-  --color-brand-800: #0c3b2a;
-  --color-brand-900: #0a2e22;
+  /* Brand — rich emerald green (matched to the reference site) */
+  --color-brand-50: #e9faf1;
+  --color-brand-100: #c6f0db;
+  --color-brand-200: #93e0bb;
+  --color-brand-300: #57c994;
+  --color-brand-400: #29ab70;
+  --color-brand-500: #138a55;
+  --color-brand-600: #0e7347;
+  --color-brand-700: #0b5d3a;
+  --color-brand-800: #084a2e;
+  --color-brand-900: #063620;
+  --color-brand-950: #042417;
 
   /* Gold — metallic accent for primary CTAs and highlights */
   --color-gold-50: #fbf7ea;
   --color-gold-100: #f6eccd;
   --color-gold-200: #ecd9a1;
-  --color-gold-300: #e0c275;
+  --color-gold-300: #e3c560;
   --color-gold-400: #d4af37;
-  --color-gold-500: #cfa23e;
+  --color-gold-500: #c9a227;
   --color-gold-600: #b3862c;
   --color-gold-700: #8c6722;
   --color-gold-800: #6b4f1e;
@@ -44,15 +46,56 @@
 }
 
 :root {
-  --background: #f6f8f6; /* faint green-tinted canvas */
+  --background: #f3f8f4; /* faint emerald-tinted canvas */
   --surface: #ffffff;
-  --foreground: #0f1f18; /* near-black green */
-  --muted: #5b6b62;
-  --border: #e2e8e4;
+  --foreground: #0c1f16; /* near-black green */
+  --muted: #51655a;
+  --border: #dde9e1;
 }
 
 html {
   -webkit-text-size-adjust: 100%;
+}
+
+/* Smooth cross-fade ("morph") between pages on navigation (modern browsers). */
+@view-transition {
+  navigation: auto;
+}
+
+/* Scroll-reveal: hidden until .is-visible is toggled by the Reveal component. */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Hero entrance */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-fade-up {
+  animation: fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 body {
@@ -62,30 +105,52 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Arabic calligraphy glyphs (Bismillah ﷽, etc.) render with a serif face. */
+/* Arabic calligraphy glyphs (Bismillah ﷽, Iqra اقْرَأْ, etc.) use a serif face. */
 .font-arabic {
   font-family: var(--font-arabic);
 }
 
 /*
-  Subtle Islamic geometric backdrop — an 8-point star lattice rendered as an
-  inline SVG. Use on dark green panels (`.islamic-pattern`) for texture.
+  Islamic 8-point-star lattice as an inline SVG, used as a faint texture
+  layered over the green surfaces below.
 */
 .islamic-pattern {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='1'%3E%3Cpath d='M30 2l8 20 20 8-20 8-8 20-8-20-20-8 20-8z'/%3E%3Crect x='15' y='15' width='30' height='30' transform='rotate(45 30 30)'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.07' stroke-width='1'%3E%3Cpath d='M30 2l8 20 20 8-20 8-8 20-8-20-20-8 20-8z'/%3E%3Crect x='15' y='15' width='30' height='30' transform='rotate(45 30 30)'/%3E%3C/g%3E%3C/svg%3E");
   background-size: 60px 60px;
 }
 
-/* Thin gold-tinted scrollbars for data-dense panels */
+/*
+  Sidebar surface — the geometric lattice layered over a deep emerald
+  gradient (rich at the top, darker at the foot).
+*/
+.sidebar-bg {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='1'%3E%3Cpath d='M30 2l8 20 20 8-20 8-8 20-8-20-20-8 20-8z'/%3E%3Crect x='15' y='15' width='30' height='30' transform='rotate(45 30 30)'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(180deg, #0b5d3a 0%, #084a2e 55%, #063620 100%);
+  background-size: 60px 60px, cover;
+}
+
+/*
+  Showcase surface (login brand panel / hero banners) — emerald radial glow
+  that mirrors the reference site, with the lattice over the top.
+*/
+.brand-showcase {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='1'%3E%3Cpath d='M32 3l9 20 20 9-20 9-9 20-9-20-20-9 20-9z'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(125% 120% at 78% 30%, #1c9357 0%, #0f7344 30%, #0a4f31 56%, #063620 80%, #042417 100%);
+  background-size: 64px 64px, cover;
+}
+
+/* Thin emerald-tinted scrollbars for data-dense panels */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5c9 transparent;
+  scrollbar-color: #bcd3c4 transparent;
 }
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 *::-webkit-scrollbar-thumb {
-  background: #cbd5c9;
+  background: #bcd3c4;
   border-radius: 9999px;
 }

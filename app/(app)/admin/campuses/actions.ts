@@ -12,8 +12,10 @@ export async function createCampus(formData: FormData) {
     slug: String(formData.get("slug") ?? "").trim() || null,
     address: String(formData.get("address") ?? "").trim() || null,
     description: String(formData.get("description") ?? "").trim() || null,
+    image_url: String(formData.get("image_url") ?? "").trim() || null,
   });
   revalidatePath("/admin/campuses");
+  revalidatePath("/activities");
 }
 
 export async function deleteCampus(formData: FormData) {

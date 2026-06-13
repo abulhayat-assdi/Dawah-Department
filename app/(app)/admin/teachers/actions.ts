@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -56,4 +57,66 @@ export async function toggleTeacherActive(formData: FormData) {
   const active = String(formData.get("active")) === "true";
   await supabase.from("profiles").update({ is_active: !active }).eq("id", id);
   revalidatePath("/admin/teachers");
+}
+
+/** Edit an existing member's full profile, role and campus assignments. */
+export async function updateTeacher(
+  formData: FormData,
+): Promise<{ ok?: boolean; error?: string }> {
+  await requireAdmin();
+  const admin = createAdminClient();
+  const id = String(formData.get("id"));
+
+  const { error } = await admin
+    .from("profiles")
+    .update({
+      full_name: String(formData.get("full_name") ?? "").trim(),
+      role: String(formData.get("role") ?? "teacher"),
+      designation: String(formData.get("designation") ?? "").trim() || null,
+      phone: String(formData.get("phone") ?? "").trim() || null,
+      location: String(formData.get("location") ?? "").trim() || null,
+      background: String(formData.get("background") ?? "").trim() || null,
+      bio: String(formData.get("bio") ?? "").trim() || null,
+      photo_url: String(formData.get("photo_url") ?? "").trim() || null,
+    })
+    .eq("id", id);
+  if (error) return { error: error.message };
+
+  // Replace campus assignments with the submitted set.
+  const campusIds = formData.getAll("campus_ids").map(String).filter(Boolean);
+  await admin.from("teacher_campuses").delete().eq("teacher_id", id);
+  if (campusIds.length) {
+    await admin
+      .from("teacher_campuses")
+      .insert(campusIds.map((campus_id) => ({ teacher_id: id, campus_id })));
+  }
+
+  revalidatePath("/admin/teachers");
+  revalidatePath(`/admin/teachers/${id}`);
+  return { ok: true };
+}
+
+export async function resetTeacherPassword(
+  formData: FormData,
+): Promise<{ ok?: boolean; error?: string }> {
+  await requireAdmin();
+  const admin = createAdminClient();
+  const id = String(formData.get("id"));
+  const password = String(formData.get("password") ?? "");
+  if (password.length < 6) {
+    return { error: "Password must be at least 6 characters." };
+  }
+  const { error } = await admin.auth.admin.updateUserById(id, { password });
+  if (error) return { error: error.message };
+  return { ok: true };
+}
+
+export async function deleteTeacher(formData: FormData) {
+  await requireAdmin();
+  const admin = createAdminClient();
+  const id = String(formData.get("id"));
+  // Deletes the auth user; the profile row cascades via its FK.
+  await admin.auth.admin.deleteUser(id);
+  revalidatePath("/admin/teachers");
+  redirect("/admin/teachers");
 }

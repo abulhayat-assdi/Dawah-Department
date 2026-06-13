@@ -27,7 +27,7 @@ export function TrackerTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[920px] text-sm">
+      <table className="w-full min-w-[1020px] text-sm">
         <thead>
           <tr className="border-b border-slate-100 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
             <th className="px-3 py-3">#</th>
@@ -40,6 +40,7 @@ export function TrackerTable({
             <th className="px-3 py-3 text-center">Final</th>
             <th className="px-3 py-3">Status</th>
             <th className="px-3 py-3 text-center">Days Left</th>
+            <th className="px-3 py-3 text-center">Est. (pace)</th>
             <th className="px-3 py-3">Farewell</th>
           </tr>
         </thead>
@@ -80,6 +81,11 @@ export function TrackerTable({
               </td>
               <td className="px-3 py-3 text-center font-medium text-slate-700">
                 {r.days_left == null ? "—" : `${toBn(r.days_left)} days`}
+              </td>
+              <td className="px-3 py-3 text-center text-slate-500">
+                {r.projected_days_left == null
+                  ? "—"
+                  : `~${toBn(r.projected_days_left)} days`}
               </td>
               <td className="px-3 py-3 text-slate-600">
                 {formatDate(r.farewell_date)}

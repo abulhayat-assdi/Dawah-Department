@@ -36,7 +36,12 @@ export async function updateSession(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isAuthRoute = path === "/login" || path.startsWith("/auth");
-  const isPublic = path === "/" || isAuthRoute;
+  // Public marketing site — viewable without login (incl. sub-paths).
+  const publicPrefixes = ["/about", "/faculty", "/academic", "/activities", "/contact"];
+  const isPublic =
+    path === "/" ||
+    isAuthRoute ||
+    publicPrefixes.some((p) => path === p || path.startsWith(p + "/"));
 
   // Unauthenticated users hitting a protected route → /login
   if (!user && !isPublic) {

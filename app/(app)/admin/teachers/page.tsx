@@ -8,6 +8,8 @@ import {
   Button,
 } from "@/components/ui";
 import { ROLE_LABEL } from "@/lib/constants";
+import { Avatar } from "@/components/avatar";
+import Link from "next/link";
 import { TeacherForm } from "./teacher-form";
 import { toggleTeacherActive } from "./actions";
 import type { Campus, Profile } from "@/lib/types";
@@ -43,10 +45,11 @@ export default async function TeachersPage() {
                   key={m.id}
                   className="flex items-center justify-between gap-3 px-5 py-4"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="grid size-10 place-items-center rounded-full bg-brand-100 font-bold text-brand-700">
-                      {(m.full_name || "U").slice(0, 1)}
-                    </span>
+                  <Link
+                    href={`/admin/teachers/${m.id}`}
+                    className="flex items-center gap-3 hover:opacity-80"
+                  >
+                    <Avatar name={m.full_name} photoUrl={m.photo_url} size={40} />
                     <div>
                       <p className="font-semibold text-slate-900">
                         {m.full_name || "Unnamed"}
@@ -55,8 +58,14 @@ export default async function TeachersPage() {
                         {m.designation || ROLE_LABEL[m.role]}
                       </p>
                     </div>
-                  </div>
+                  </Link>
                   <div className="flex items-center gap-2">
+                    <Link
+                      href={`/admin/teachers/${m.id}`}
+                      className="rounded-lg px-2.5 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50"
+                    >
+                      Manage
+                    </Link>
                     <span
                       className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                         m.is_active

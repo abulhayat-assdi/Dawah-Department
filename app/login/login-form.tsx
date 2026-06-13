@@ -38,9 +38,18 @@ export function LoginForm() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       {/* Brand panel */}
-      <div className="islamic-pattern relative hidden flex-col justify-between bg-brand-800 p-12 text-white lg:flex">
-        <div className="flex items-center gap-3">
-          <span className="grid size-11 place-items-center rounded-2xl bg-gold-400 text-2xl text-brand-900 shadow-sm">
+      <div className="brand-showcase relative hidden flex-col justify-between overflow-hidden p-12 text-white lg:flex">
+        {/* Gold "Iqra" (Read) calligraphy watermark */}
+        <span
+          className="font-arabic pointer-events-none absolute -right-6 top-1/2 -translate-y-1/2 select-none text-[16rem] leading-none text-gold-400/15"
+          dir="rtl"
+          aria-hidden="true"
+        >
+          اقْرَأْ
+        </span>
+
+        <div className="relative flex items-center gap-3">
+          <span className="grid size-11 place-items-center rounded-2xl bg-gold-400 text-2xl text-brand-900 shadow-lg ring-1 ring-gold-200/40">
             ☪
           </span>
           <div>
@@ -51,7 +60,7 @@ export function LoginForm() {
           </div>
         </div>
 
-        <div>
+        <div className="relative">
           <p
             className="font-arabic text-4xl leading-none text-gold-300"
             dir="rtl"
@@ -59,8 +68,9 @@ export function LoginForm() {
           >
             ﷽
           </p>
-          <h1 className="mt-6 text-3xl font-bold leading-snug">
-            Authentic knowledge meets <br /> modern skill
+          <h1 className="mt-6 text-4xl font-bold leading-snug">
+            Authentic knowledge meets <br />
+            <span className="text-gold-300">modern skill</span>
           </h1>
           <p className="mt-4 max-w-md text-white/85">
             Course progress, member activity and reporting for the Dawah
@@ -69,7 +79,7 @@ export function LoginForm() {
           </p>
         </div>
 
-        <p className="text-sm text-white/70">
+        <p className="relative text-sm text-white/70">
           © {new Date().getFullYear()} ASSDI Dawah Department — All rights
           reserved
         </p>

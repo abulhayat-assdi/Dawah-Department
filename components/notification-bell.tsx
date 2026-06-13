@@ -27,6 +27,8 @@ export function NotificationBell({ userId }: { userId: string }) {
   }
 
   useEffect(() => {
+    // load() only setState()s after an awaited fetch (async), not synchronously.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
     // Light polling keeps the count fresh without a realtime subscription.
     const t = setInterval(load, 60_000);

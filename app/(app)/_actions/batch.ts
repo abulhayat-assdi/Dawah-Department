@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { createNotification } from "@/lib/notify";
 
 /**
  * Shared batch-progress actions used by BOTH the admin batch page and the
@@ -69,6 +70,26 @@ export async function toggleTopic(formData: FormData) {
     },
     { onConflict: "batch_id,topic_id" },
   );
+
+  // Confirmation workflow: when a teacher marks a topic complete, notify the
+  // coordinator(s) so they can confirm the progress.
+  if (next === "done" && profile.role !== "super_admin") {
+    const [{ data: topic }, { data: admins }] = await Promise.all([
+      supabase.from("syllabus_topics").select("title").eq("id", topic_id).maybeSingle(),
+      supabase.from("profiles").select("id").eq("role", "super_admin"),
+    ]);
+    const title = (topic?.title as string) || "a topic";
+    await Promise.all(
+      (admins ?? []).map((a) =>
+        createNotification(a.id as string, {
+          title: "Topic completed",
+          body: `${profile.full_name || "A member"} marked "${title}" complete.`,
+          link: `/admin/batches/${batch_id}`,
+        }),
+      ),
+    );
+  }
+
   revalidate(batch_id);
 }
 

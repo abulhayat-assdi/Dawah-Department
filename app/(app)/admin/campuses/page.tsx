@@ -10,6 +10,8 @@ import {
   Button,
   EmptyState,
 } from "@/components/ui";
+import Link from "next/link";
+import { FileUpload } from "@/components/file-upload";
 import { createCampus, deleteCampus } from "./actions";
 import type { Campus } from "@/lib/types";
 
@@ -38,12 +40,17 @@ export default async function CampusesPage() {
                   key={c.id}
                   className="flex items-center justify-between gap-3 px-5 py-4"
                 >
-                  <div>
-                    <p className="font-semibold text-slate-900">{c.name}</p>
+                  <Link
+                    href={`/admin/campuses/${c.id}`}
+                    className="group flex-1 hover:opacity-80"
+                  >
+                    <p className="font-semibold text-slate-900 group-hover:text-brand-600">
+                      {c.name} →
+                    </p>
                     <p className="text-sm text-slate-500">
                       {c.address || "No address added"}
                     </p>
-                  </div>
+                  </Link>
                   <form action={deleteCampus}>
                     <input type="hidden" name="id" value={c.id} />
                     <Button variant="ghost" className="text-red-600">
@@ -75,6 +82,12 @@ export default async function CampusesPage() {
               <Label htmlFor="description">Description</Label>
               <Textarea id="description" name="description" />
             </div>
+            <FileUpload
+              name="image_url"
+              bucket="resources"
+              kind="image"
+              label="Campus Image (for public site)"
+            />
             <Button type="submit" className="w-full">
               Add
             </Button>

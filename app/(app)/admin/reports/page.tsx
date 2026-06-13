@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardHeader, PageHeader, EmptyState, StatCard } from "@/components/ui";
+import { Card, CardHeader, PageHeader, EmptyState, StatCard, Label, Input, Button } from "@/components/ui";
 import { formatDate, toBn } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
 
@@ -37,12 +37,37 @@ export default async function ReportsPage() {
   );
   const missing = teachers.filter((t) => !reportedToday.has(t.id));
 
+  const thisMonth = today.slice(0, 7);
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Daily Reports"
         subtitle="Reports submitted by members and today's status."
       />
+
+      <Card>
+        <CardHeader
+          title="Monthly Report Export"
+          subtitle="One click to export the whole month's work & course progress as PDF / Word."
+        />
+        <form
+          action="/admin/reports/export"
+          method="get"
+          className="flex flex-wrap items-end gap-3 p-5"
+        >
+          <div>
+            <Label htmlFor="month">Month</Label>
+            <Input id="month" name="month" type="month" defaultValue={thisMonth} />
+          </div>
+          <Button type="submit" name="format" value="pdf" variant="secondary">
+            ⬇ PDF
+          </Button>
+          <Button type="submit" name="format" value="docx">
+            ⬇ Word
+          </Button>
+        </form>
+      </Card>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         <StatCard label="Total Members" value={toBn(teachers.length)} icon="👥" accent="brand" />

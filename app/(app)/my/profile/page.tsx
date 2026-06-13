@@ -10,6 +10,8 @@ import {
   Button,
 } from "@/components/ui";
 import { ROLE_LABEL } from "@/lib/constants";
+import { Avatar } from "@/components/avatar";
+import { FileUpload } from "@/components/file-upload";
 import { updateProfile } from "./actions";
 import type { Campus } from "@/lib/types";
 
@@ -35,9 +37,13 @@ export default async function ProfilePage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="h-fit p-6 text-center">
-          <span className="mx-auto grid size-20 place-items-center rounded-full bg-brand-100 text-3xl font-bold text-brand-700">
-            {(profile.full_name || "U").slice(0, 1)}
-          </span>
+          <div className="flex justify-center">
+            <Avatar
+              name={profile.full_name}
+              photoUrl={profile.photo_url}
+              size={80}
+            />
+          </div>
           <p className="mt-3 text-lg font-bold text-slate-900">
             {profile.full_name || "Unnamed"}
           </p>
@@ -82,13 +88,12 @@ export default async function ProfilePage() {
               <Input id="location" name="location" defaultValue={profile.location ?? ""} />
             </div>
             <div className="md:col-span-2">
-              <Label htmlFor="photo_url">Photo URL</Label>
-              <Input
-                id="photo_url"
+              <FileUpload
                 name="photo_url"
-                type="url"
-                defaultValue={profile.photo_url ?? ""}
-                placeholder="https://"
+                bucket="avatars"
+                kind="image"
+                label="Profile Photo"
+                defaultUrl={profile.photo_url}
               />
             </div>
             <div className="md:col-span-2">
