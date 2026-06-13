@@ -1,13 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
-export async function createCourse(formData: FormData) {
-  await requireAdmin();
-  const supabase = await createClient();
-  await supabase.from("courses").insert({
+function readCourse(formData: FormData) {
+  return {
     name: String(formData.get("name") ?? "").trim(),
     abbreviation: String(formData.get("abbreviation") ?? "").trim(),
     campus_id: String(formData.get("campus_id") ?? "") || null,
@@ -15,8 +14,25 @@ export async function createCourse(formData: FormData) {
     duration_label: String(formData.get("duration_label") ?? "").trim() || null,
     default_total_classes: Number(formData.get("default_total_classes") ?? 0),
     description: String(formData.get("description") ?? "").trim() || null,
-  });
+  };
+}
+
+export async function createCourse(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+  await supabase.from("courses").insert(readCourse(formData));
   revalidatePath("/admin/courses");
+}
+
+export async function updateCourse(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+  await supabase
+    .from("courses")
+    .update(readCourse(formData))
+    .eq("id", String(formData.get("id")));
+  revalidatePath("/admin/courses");
+  revalidatePath(`/admin/courses/${String(formData.get("id"))}`);
 }
 
 export async function deleteCourse(formData: FormData) {
@@ -24,6 +40,7 @@ export async function deleteCourse(formData: FormData) {
   const supabase = await createClient();
   await supabase.from("courses").delete().eq("id", String(formData.get("id")));
   revalidatePath("/admin/courses");
+  redirect("/admin/courses");
 }
 
 export async function addTopic(formData: FormData) {

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -13,6 +14,7 @@ export async function createBatch(formData: FormData) {
     batch_no: String(formData.get("batch_no") ?? "").trim(),
     duration_label: String(formData.get("duration_label") ?? "").trim() || null,
     start_date: String(formData.get("start_date") ?? "") || null,
+    dawah_end_date: String(formData.get("dawah_end_date") ?? "") || null,
     farewell_date: String(formData.get("farewell_date") ?? "") || null,
     total_classes: total,
     status: String(formData.get("status") ?? "will_start"),
@@ -25,6 +27,7 @@ export async function deleteBatch(formData: FormData) {
   const supabase = await createClient();
   await supabase.from("batches").delete().eq("id", String(formData.get("id")));
   revalidatePath("/admin/batches");
+  redirect("/admin/batches");
 }
 
 export async function assignTeacher(formData: FormData) {

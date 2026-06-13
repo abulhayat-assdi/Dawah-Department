@@ -61,6 +61,7 @@ export interface Batch {
   batch_no: string;
   duration_label: string | null;
   start_date: string | null;
+  dawah_end_date: string | null;
   farewell_date: string | null;
   total_classes: number;
   completed_classes: number;

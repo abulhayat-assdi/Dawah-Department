@@ -25,10 +25,13 @@ export async function updateBatchFields(formData: FormData) {
   await supabase
     .from("batches")
     .update({
+      batch_no: String(formData.get("batch_no") ?? "").trim(),
       total_classes: Number(formData.get("total_classes") ?? 0),
       midterm_status: String(formData.get("midterm_status") ?? "none"),
       final_status: String(formData.get("final_status") ?? "none"),
       status: String(formData.get("status") ?? "will_start"),
+      start_date: String(formData.get("start_date") ?? "") || null,
+      dawah_end_date: String(formData.get("dawah_end_date") ?? "") || null,
       farewell_date: String(formData.get("farewell_date") ?? "") || null,
       note: String(formData.get("note") ?? "").trim() || null,
     })

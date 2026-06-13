@@ -58,6 +58,10 @@ export default async function BatchesPage() {
             <Input id="start_date" name="start_date" type="date" />
           </div>
           <div>
+            <Label htmlFor="dawah_end_date">Last Dawah Class</Label>
+            <Input id="dawah_end_date" name="dawah_end_date" type="date" />
+          </div>
+          <div>
             <Label htmlFor="farewell_date">Farewell Date</Label>
             <Input id="farewell_date" name="farewell_date" type="date" />
           </div>

@@ -106,6 +106,7 @@ create table if not exists public.batches (
   batch_no         text not null,
   duration_label   text,
   start_date       date,
+  dawah_end_date   date,                  -- last date dawah classes are taken
   farewell_date    date,                  -- expected finish (Farewell Date)
   total_classes    int not null default 0,
   completed_classes int not null default 0, -- auto-synced from class_logs

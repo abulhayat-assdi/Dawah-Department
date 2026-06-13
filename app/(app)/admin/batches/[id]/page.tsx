@@ -46,6 +46,7 @@ export default async function AdminBatchDetailPage({
         assessments={data.assessments}
         recentLogs={data.recentLogs}
         canEdit
+        canDelete
       />
 
       <Card>

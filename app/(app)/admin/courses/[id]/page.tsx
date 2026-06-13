@@ -9,13 +9,15 @@ import {
   Label,
   Input,
   Textarea,
+  Select,
   Button,
   EmptyState,
 } from "@/components/ui";
 import { toBn } from "@/lib/utils";
 import { COURSE_CATEGORY_LABEL } from "@/lib/constants";
-import { addTopic, deleteTopic } from "../actions";
-import type { Course } from "@/lib/types";
+import { DeleteButton } from "@/components/delete-button";
+import { addTopic, deleteTopic, updateCourse, deleteCourse } from "../actions";
+import type { Campus, Course } from "@/lib/types";
 
 interface Topic {
   id: string;
@@ -40,12 +42,12 @@ export default async function CourseDetailPage({
     .single();
   if (!course) notFound();
 
-  const { data: topicData } = await supabase
-    .from("syllabus_topics")
-    .select("*")
-    .eq("course_id", id)
-    .order("sequence");
+  const [{ data: topicData }, { data: campusData }] = await Promise.all([
+    supabase.from("syllabus_topics").select("*").eq("course_id", id).order("sequence"),
+    supabase.from("campuses").select("*").order("name"),
+  ]);
   const topics = (topicData ?? []) as Topic[];
+  const campuses = (campusData ?? []) as Campus[];
   const c = course as Course;
 
   return (
@@ -57,6 +59,68 @@ export default async function CourseDetailPage({
         title={`${c.abbreviation} — ${c.name}`}
         subtitle={`${COURSE_CATEGORY_LABEL[c.category]} · ${c.duration_label ?? ""} · ${toBn(c.default_total_classes)} classes`}
       />
+
+      <Card>
+        <CardHeader title="Edit Course" subtitle="Update this course's details" />
+        <form action={updateCourse} className="grid gap-4 p-5 md:grid-cols-2">
+          <input type="hidden" name="id" value={id} />
+          <div className="md:col-span-2">
+            <Label htmlFor="name">Course Name</Label>
+            <Input id="name" name="name" required defaultValue={c.name} />
+          </div>
+          <div>
+            <Label htmlFor="abbreviation">Code</Label>
+            <Input id="abbreviation" name="abbreviation" required defaultValue={c.abbreviation} />
+          </div>
+          <div>
+            <Label htmlFor="duration_label">Duration</Label>
+            <Input id="duration_label" name="duration_label" defaultValue={c.duration_label ?? ""} />
+          </div>
+          <div>
+            <Label htmlFor="campus_id">Campus</Label>
+            <Select id="campus_id" name="campus_id" defaultValue={c.campus_id ?? ""}>
+              <option value="">— Select —</option>
+              {campuses.map((cm) => (
+                <option key={cm.id} value={cm.id}>
+                  {cm.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <Select id="category" name="category" defaultValue={c.category}>
+                <option value="common">Both</option>
+                <option value="alem">Alem</option>
+                <option value="general">General</option>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="default_total_classes">Total Classes</Label>
+              <Input
+                id="default_total_classes"
+                name="default_total_classes"
+                type="number"
+                defaultValue={c.default_total_classes}
+              />
+            </div>
+          </div>
+          <div className="md:col-span-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea id="description" name="description" defaultValue={c.description ?? ""} />
+          </div>
+          <div className="flex items-center gap-3 md:col-span-2">
+            <Button type="submit">Save changes</Button>
+            <DeleteButton
+              action={deleteCourse}
+              id={id}
+              label="Delete course"
+              confirmText="এই কোর্সটি মুছে ফেলবেন? এর ব্যাচ ও সিলেবাসও মুছে যাবে।"
+            />
+          </div>
+        </form>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">

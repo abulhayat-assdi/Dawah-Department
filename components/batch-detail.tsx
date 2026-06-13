@@ -19,6 +19,8 @@ import {
   toggleTopic,
   setAssessment,
 } from "@/app/(app)/_actions/batch";
+import { deleteBatch } from "@/app/(app)/admin/batches/actions";
+import { DeleteButton } from "@/components/delete-button";
 import type { Batch } from "@/lib/types";
 
 interface Topic {
@@ -56,6 +58,7 @@ export function BatchDetail({
   assessments,
   recentLogs,
   canEdit,
+  canDelete = false,
 }: {
   batch: Batch;
   courseName: string;
@@ -65,6 +68,7 @@ export function BatchDetail({
   assessments: Assessment[];
   recentLogs: ClassLog[];
   canEdit: boolean;
+  canDelete?: boolean;
 }) {
   const pct =
     batch.total_classes > 0
@@ -109,7 +113,8 @@ export function BatchDetail({
         <div className="mb-2 flex items-center justify-between text-sm">
           <span className="font-medium text-slate-600">Overall Progress</span>
           <span className="text-slate-400">
-            Start {formatDate(batch.start_date)} · Farewell{" "}
+            Start {formatDate(batch.start_date)} · Last dawah class{" "}
+            {formatDate(batch.dawah_end_date)} · Farewell{" "}
             {formatDate(batch.farewell_date)}
           </span>
         </div>
@@ -189,10 +194,14 @@ export function BatchDetail({
         <div className="space-y-6">
           {canEdit && (
             <Card>
-              <CardHeader title="Update Batch Status" />
+              <CardHeader title="Edit Batch" subtitle="Update batch details and progress" />
               <form action={updateBatchFields} className="space-y-3 p-5">
                 <input type="hidden" name="id" value={batch.id} />
                 <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="batch_no">Batch No.</Label>
+                    <Input id="batch_no" name="batch_no" defaultValue={batch.batch_no} />
+                  </div>
                   <div>
                     <Label htmlFor="total_classes">Total Classes</Label>
                     <Input
@@ -200,6 +209,17 @@ export function BatchDetail({
                       name="total_classes"
                       type="number"
                       defaultValue={batch.total_classes}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="start_date">Start Date</Label>
+                    <Input
+                      id="start_date"
+                      name="start_date"
+                      type="date"
+                      defaultValue={batch.start_date ?? ""}
                     />
                   </div>
                   <div>
@@ -237,14 +257,25 @@ export function BatchDetail({
                     </Select>
                   </div>
                 </div>
-                <div>
-                  <Label htmlFor="farewell_date">Expected Farewell Date</Label>
-                  <Input
-                    id="farewell_date"
-                    name="farewell_date"
-                    type="date"
-                    defaultValue={batch.farewell_date ?? ""}
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="dawah_end_date">Last Dawah Class</Label>
+                    <Input
+                      id="dawah_end_date"
+                      name="dawah_end_date"
+                      type="date"
+                      defaultValue={batch.dawah_end_date ?? ""}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="farewell_date">Farewell Date</Label>
+                    <Input
+                      id="farewell_date"
+                      name="farewell_date"
+                      type="date"
+                      defaultValue={batch.farewell_date ?? ""}
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="note">Note</Label>
@@ -259,6 +290,17 @@ export function BatchDetail({
                   Save Update
                 </Button>
               </form>
+              {canDelete && (
+                <div className="border-t border-slate-100 p-5">
+                  <DeleteButton
+                    action={deleteBatch}
+                    id={batch.id}
+                    label="Delete this batch"
+                    confirmText="এই ব্যাচটি স্থায়ীভাবে মুছে ফেলবেন?"
+                    className="w-full"
+                  />
+                </div>
+              )}
             </Card>
           )}
 
