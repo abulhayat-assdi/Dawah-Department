@@ -42,6 +42,7 @@ export function TeacherForm({ campuses }: { campuses: Campus[] }) {
           <Label htmlFor="role">Role</Label>
           <Select id="role" name="role" defaultValue="teacher">
             <option value="teacher">Teacher / Member</option>
+            <option value="coordinator">Campus Coordinator</option>
             <option value="super_admin">Super Admin</option>
           </Select>
         </div>

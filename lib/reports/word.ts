@@ -10,7 +10,7 @@ import {
   WidthType,
   AlignmentType,
 } from "docx";
-import type { MonthlyReport } from "./monthly-data";
+import type { MonthlyReport, YearlyReport } from "./monthly-data";
 
 function cell(text: string, bold = false): TableCell {
   return new TableCell({
@@ -66,15 +66,17 @@ export async function buildWordReport(data: MonthlyReport): Promise<Buffer> {
 
           new Paragraph({
             heading: HeadingLevel.HEADING_2,
-            children: [new TextRun({ text: "Member Activity", bold: true })],
+            children: [new TextRun({ text: "Teacher Performance", bold: true })],
           }),
           table(
-            ["Member", "Days Reported", "Work Hours", "Counseling"],
+            ["Member", "Days Reported", "Work Hours", "Counseling", "Classes Taken", "Batches Managed"],
             data.members.map((m) => [
               m.name,
               String(m.days_reported),
               String(m.total_hours),
               String(m.total_counseling),
+              String(m.classes_taken),
+              m.batches.join(", ") || "—",
             ]),
           ),
           new Paragraph({
@@ -102,6 +104,67 @@ export async function buildWordReport(data: MonthlyReport): Promise<Buffer> {
               t.status,
             ]),
           ),
+        ],
+      },
+    ],
+  });
+
+  return Packer.toBuffer(doc) as unknown as Promise<Buffer>;
+}
+
+/** Build the yearly tracker as a .docx Buffer. */
+export async function buildYearlyWordReport(data: YearlyReport): Promise<Buffer> {
+  const doc = new Document({
+    sections: [
+      {
+        children: [
+          new Paragraph({
+            heading: HeadingLevel.HEADING_1,
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({ text: "ADIMS — Dawah Department", bold: true }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({ text: `Yearly Tracker — ${data.year}`, size: 26 }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: `Generated: ${data.generatedAt}`,
+                italics: true,
+                size: 18,
+              }),
+            ],
+          }),
+          new Paragraph({ text: "" }),
+
+          new Paragraph({
+            heading: HeadingLevel.HEADING_2,
+            children: [new TextRun({ text: "Month-by-Month Overview", bold: true })],
+          }),
+          table(
+            ["Month", "Reports", "Hours", "Counseling", "Classes Taken"],
+            data.monthly.map((m) => [
+              m.monthLabel,
+              String(m.reports),
+              String(m.hours),
+              String(m.counseling),
+              String(m.classes),
+            ]),
+          ),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Yearly Totals — Reports: ${data.totals.reports}, Hours: ${data.totals.hours}, Counseling: ${data.totals.counseling}, Classes Taken: ${data.totals.classes}`,
+                bold: true,
+              }),
+            ],
+          }),
         ],
       },
     ],

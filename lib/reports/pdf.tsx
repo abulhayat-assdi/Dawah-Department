@@ -8,7 +8,7 @@ import {
   Font,
   renderToBuffer,
 } from "@react-pdf/renderer";
-import type { MonthlyReport } from "./monthly-data";
+import type { MonthlyReport, YearlyReport } from "./monthly-data";
 
 // Register the bundled Noto Sans Bengali so Bangla glyphs render in the PDF.
 // (The default Helvetica has no Bengali coverage.)
@@ -51,12 +51,14 @@ function ReportDoc({ data }: { data: MonthlyReport }) {
         <Text style={s.sub}>Monthly Report — {data.monthLabel}</Text>
         <Text style={s.meta}>Generated: {data.generatedAt}</Text>
 
-        <Text style={s.h2}>Member Activity</Text>
+        <Text style={s.h2}>Teacher Performance</Text>
         <View style={s.headRow}>
           <Cell head>Member</Cell>
           <Cell head>Days</Cell>
           <Cell head>Hours</Cell>
           <Cell head>Counseling</Cell>
+          <Cell head>Classes Taken</Cell>
+          <Cell head>Batches Managed</Cell>
         </View>
         {data.members.map((m) => (
           <View style={s.row} key={m.teacher_id}>
@@ -64,6 +66,8 @@ function ReportDoc({ data }: { data: MonthlyReport }) {
             <Cell>{m.days_reported}</Cell>
             <Cell>{m.total_hours}</Cell>
             <Cell>{m.total_counseling}</Cell>
+            <Cell>{m.classes_taken}</Cell>
+            <Cell>{m.batches.join(", ") || "—"}</Cell>
           </View>
         ))}
         <Text style={s.totals}>
@@ -101,4 +105,44 @@ function ReportDoc({ data }: { data: MonthlyReport }) {
 export async function buildPdfReport(data: MonthlyReport): Promise<Buffer> {
   ensureFonts();
   return renderToBuffer(<ReportDoc data={data} />);
+}
+
+function YearlyDoc({ data }: { data: YearlyReport }) {
+  return (
+    <Document>
+      <Page size="A4" style={s.page}>
+        <Text style={s.h1}>ADIMS — Dawah Department</Text>
+        <Text style={s.sub}>Yearly Tracker — {data.year}</Text>
+        <Text style={s.meta}>Generated: {data.generatedAt}</Text>
+
+        <Text style={s.h2}>Month-by-Month Overview</Text>
+        <View style={s.headRow}>
+          <Cell head>Month</Cell>
+          <Cell head>Reports</Cell>
+          <Cell head>Hours</Cell>
+          <Cell head>Counseling</Cell>
+          <Cell head>Classes Taken</Cell>
+        </View>
+        {data.monthly.map((m) => (
+          <View style={s.row} key={m.month}>
+            <Cell>{m.monthLabel}</Cell>
+            <Cell>{m.reports}</Cell>
+            <Cell>{m.hours}</Cell>
+            <Cell>{m.counseling}</Cell>
+            <Cell>{m.classes}</Cell>
+          </View>
+        ))}
+        <Text style={s.totals}>
+          Yearly Totals — Reports: {data.totals.reports}, Hours: {data.totals.hours},
+          Counseling: {data.totals.counseling}, Classes Taken: {data.totals.classes}
+        </Text>
+      </Page>
+    </Document>
+  );
+}
+
+/** Build the yearly tracker as a PDF Buffer. */
+export async function buildYearlyPdfReport(data: YearlyReport): Promise<Buffer> {
+  ensureFonts();
+  return renderToBuffer(<YearlyDoc data={data} />);
 }

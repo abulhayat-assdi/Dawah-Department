@@ -32,3 +32,12 @@ export async function requireAdmin(): Promise<Profile> {
   if (profile.role !== "super_admin") redirect("/dashboard");
   return profile;
 }
+
+/** Requires super_admin or coordinator; redirects teachers to their dashboard. */
+export async function requireCoordinatorOrAdmin(): Promise<Profile> {
+  const profile = await requireProfile();
+  if (profile.role !== "super_admin" && profile.role !== "coordinator") {
+    redirect("/dashboard");
+  }
+  return profile;
+}

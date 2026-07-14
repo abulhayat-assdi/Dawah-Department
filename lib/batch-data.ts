@@ -1,5 +1,5 @@
 import { createClient } from "./supabase/server";
-import type { Batch, Course } from "./types";
+import type { Batch, ClassScheduleEntry, Course } from "./types";
 
 export interface BatchDetailData {
   batch: Batch;
@@ -13,6 +13,7 @@ export interface BatchDetailData {
     counseling_count: number | null;
     note: string | null;
   }[];
+  schedule: ClassScheduleEntry[];
 }
 
 /** Loads everything the BatchDetail component needs. Returns null if missing. */
@@ -34,7 +35,7 @@ export async function loadBatchDetail(
     .eq("id", batch.course_id)
     .single();
 
-  const [topics, topicProgress, assessments, recentLogs] = await Promise.all([
+  const [topics, topicProgress, assessments, recentLogs, schedule] = await Promise.all([
     supabase
       .from("syllabus_topics")
       .select("id, sequence, title")
@@ -51,6 +52,11 @@ export async function loadBatchDetail(
       .eq("batch_id", batchId)
       .order("class_date", { ascending: false })
       .limit(8),
+    supabase
+      .from("class_schedule")
+      .select("*")
+      .eq("batch_id", batchId)
+      .order("class_date", { ascending: true }),
   ]);
 
   return {
@@ -60,5 +66,6 @@ export async function loadBatchDetail(
     topicProgress: topicProgress.data ?? [],
     assessments: assessments.data ?? [],
     recentLogs: recentLogs.data ?? [],
+    schedule: (schedule.data ?? []) as ClassScheduleEntry[],
   };
 }

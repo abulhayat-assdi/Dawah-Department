@@ -43,3 +43,21 @@ export async function deleteCampus(formData: FormData) {
   revalidatePath("/activities");
   redirect("/admin/campuses");
 }
+
+/** Replaces the set of courses running at this campus (courses.campus_id). */
+export async function setCampusCourses(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+  const campusId = String(formData.get("campus_id"));
+  const courseIds = formData.getAll("course_ids").map(String).filter(Boolean);
+
+  await supabase.from("courses").update({ campus_id: null }).eq("campus_id", campusId);
+  if (courseIds.length) {
+    await supabase.from("courses").update({ campus_id: campusId }).in("id", courseIds);
+  }
+
+  revalidatePath("/admin/campuses");
+  revalidatePath(`/admin/campuses/${campusId}`);
+  revalidatePath("/admin/courses");
+  revalidatePath("/admin/tracker");
+}

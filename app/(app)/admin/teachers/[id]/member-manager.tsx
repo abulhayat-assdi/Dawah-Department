@@ -75,6 +75,7 @@ export function MemberManager({
             <Label htmlFor="role">Role</Label>
             <Select id="role" name="role" defaultValue={member.role}>
               <option value="teacher">Teacher / Member</option>
+              <option value="coordinator">Campus Coordinator</option>
               <option value="super_admin">Super Admin</option>
             </Select>
           </div>

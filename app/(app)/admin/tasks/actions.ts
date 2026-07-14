@@ -1,18 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin, requireProfile } from "@/lib/auth";
+import { requireCoordinatorOrAdmin, requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notify";
 
 export async function createTask(formData: FormData) {
-  const profile = await requireAdmin();
+  const profile = await requireCoordinatorOrAdmin();
   const supabase = await createClient();
   const title = String(formData.get("title") ?? "").trim();
   const assignedTo = String(formData.get("assigned_to") ?? "") || null;
   await supabase.from("tasks").insert({
     title,
     description: String(formData.get("description") ?? "").trim() || null,
+    campus_id: String(formData.get("campus_id") ?? "") || null,
     assigned_to: assignedTo,
     assigned_by: profile.id,
     due_date: String(formData.get("due_date") ?? "") || null,
@@ -43,7 +44,7 @@ export async function updateTaskStatus(formData: FormData) {
 }
 
 export async function deleteTask(formData: FormData) {
-  await requireAdmin();
+  await requireCoordinatorOrAdmin();
   const supabase = await createClient();
   await supabase.from("tasks").delete().eq("id", String(formData.get("id")));
   revalidatePath("/admin/tasks");

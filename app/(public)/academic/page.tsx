@@ -7,8 +7,19 @@ import type { Course } from "@/lib/types";
 
 export default async function AcademicPage() {
   const [ac, supabase] = await Promise.all([getContent("academic"), createClient()]);
-  const { data } = await supabase.from("courses").select("*").order("abbreviation");
+  const [{ data }, { data: syllabusData }] = await Promise.all([
+    supabase.from("courses").select("*").order("abbreviation"),
+    supabase
+      .from("resources")
+      .select("course_id, syllabus_kind, url")
+      .not("syllabus_kind", "is", null),
+  ]);
   const courses = (data ?? []) as Course[];
+  const syllabusDocs = (syllabusData ?? []) as {
+    course_id: string;
+    syllabus_kind: string;
+    url: string;
+  }[];
 
   return (
     <div>
@@ -53,7 +64,7 @@ export default async function AcademicPage() {
             </span>
             <h2 className="text-2xl font-bold text-slate-900">{ac.programsHeading}</h2>
           </div>
-          <ProgramsToggle courses={courses} />
+          <ProgramsToggle courses={courses} syllabusDocs={syllabusDocs} />
         </div>
       </section>
 

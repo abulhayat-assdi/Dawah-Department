@@ -34,8 +34,14 @@ export const TASK_STATUS: Record<
   done: { label: "Done", text: "text-green-700", bg: "bg-green-50" },
 };
 
+export const PRIORITY_LABEL: Record<number, string> = {
+  0: "Normal",
+  1: "Important",
+};
+
 export const ROLE_LABEL: Record<UserRole, string> = {
-  super_admin: "Super Admin (Coordinator)",
+  super_admin: "Super Admin",
+  coordinator: "Campus Coordinator",
   teacher: "Teacher / Member",
 };
 
@@ -61,6 +67,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/batches", label: "Batch Management", icon: "🗂️" },
   { href: "/admin/tasks", label: "Task Management", icon: "✅" },
   { href: "/admin/amali", label: "Amali Checklist", icon: "📿" },
+  { href: "/admin/staff-tracker", label: "Staff Quran & Dawah Tracker", icon: "📖" },
   { href: "/admin/reports", label: "Reports", icon: "📝" },
   { href: "/admin/resources", label: "Resource Center", icon: "📁" },
   { href: "/admin/content", label: "Public Pages", icon: "🌐" },
@@ -69,11 +76,27 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/feedback", label: "Feedback & Complaints", icon: "📨" },
 ];
 
+// Campus Coordinators: scoped subset of ADMIN_NAV — no Campus/Course catalog
+// management or public-site admin, but full batch/tracker/task/amali access
+// within their assigned campus(es) (enforced by RLS, not just hidden nav).
+export const COORDINATOR_NAV: NavItem[] = [
+  { href: "/dashboard", label: "Dashboard", icon: "🏠" },
+  { href: "/admin/tracker", label: "Course Progress Tracker", icon: "📊" },
+  { href: "/admin/teachers", label: "Teachers / Members", icon: "👥" },
+  { href: "/admin/batches", label: "Batch Management", icon: "🗂️" },
+  { href: "/admin/tasks", label: "Task Management", icon: "✅" },
+  { href: "/admin/amali", label: "Amali Checklist", icon: "📿" },
+  { href: "/admin/staff-tracker", label: "Staff Quran & Dawah Tracker", icon: "📖" },
+  { href: "/admin/reports", label: "Reports", icon: "📝" },
+  { href: "/messages", label: "Messages", icon: "💬" },
+];
+
 export const TEACHER_NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: "🏠" },
   { href: "/my/batches", label: "My Batches", icon: "🗂️" },
   { href: "/my/tasks", label: "My Tasks", icon: "✅" },
   { href: "/my/amali", label: "Amali Checklist", icon: "📿" },
+  { href: "/my/staff-tracker", label: "My Quran & Dawah", icon: "📖" },
   { href: "/my/report", label: "Daily Report", icon: "📝" },
   { href: "/messages", label: "Messages", icon: "💬" },
   { href: "/my/profile", label: "My Profile", icon: "👤" },

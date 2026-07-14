@@ -43,6 +43,47 @@ export async function deleteCourse(formData: FormData) {
   redirect("/admin/courses");
 }
 
+/** Upserts the syllabus PDF for one course + kind (quran/general/dawah). */
+export async function uploadSyllabus(formData: FormData) {
+  const profile = await requireAdmin();
+  const supabase = await createClient();
+  const course_id = String(formData.get("course_id"));
+  const syllabus_kind = String(formData.get("syllabus_kind"));
+  const url = String(formData.get("file_url") ?? "").trim();
+  if (!url) return;
+
+  const { data: existing } = await supabase
+    .from("resources")
+    .select("id")
+    .eq("course_id", course_id)
+    .eq("syllabus_kind", syllabus_kind)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase.from("resources").update({ url }).eq("id", existing.id as string);
+  } else {
+    await supabase.from("resources").insert({
+      title: `${syllabus_kind} syllabus`,
+      type: "pdf",
+      url,
+      course_id,
+      syllabus_kind,
+      uploaded_by: profile.id,
+    });
+  }
+  revalidatePath(`/admin/courses/${course_id}`);
+  revalidatePath("/academic");
+}
+
+export async function deleteSyllabus(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+  const course_id = String(formData.get("course_id"));
+  await supabase.from("resources").delete().eq("id", String(formData.get("id")));
+  revalidatePath(`/admin/courses/${course_id}`);
+  revalidatePath("/academic");
+}
+
 export async function addTopic(formData: FormData) {
   await requireAdmin();
   const supabase = await createClient();

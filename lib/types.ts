@@ -1,6 +1,6 @@
 // Shared domain types mirroring the Supabase schema.
 
-export type UserRole = "super_admin" | "teacher";
+export type UserRole = "super_admin" | "coordinator" | "teacher";
 export type CourseCategory = "alem" | "general" | "common";
 export type BatchStatus = "will_start" | "ongoing" | "completed";
 export type ExamStatus = "done" | "pending" | "none";
@@ -58,9 +58,11 @@ export interface Course {
 export interface Batch {
   id: string;
   course_id: string;
+  campus_id: string | null;
   batch_no: string;
   duration_label: string | null;
   start_date: string | null;
+  expected_end_date: string | null;
   dawah_end_date: string | null;
   farewell_date: string | null;
   total_classes: number;
@@ -77,6 +79,7 @@ export interface CourseTrackerRow {
   course_id: string;
   course_info: string;
   course_name: string;
+  campus_id: string | null;
   campus_name: string | null;
   batch_no: string;
   duration_label: string | null;
@@ -88,9 +91,46 @@ export interface CourseTrackerRow {
   midterm_status: ExamStatus;
   final_status: ExamStatus;
   status: BatchStatus;
+  expected_end_date: string | null;
   farewell_date: string | null;
   days_left: number | null;
   projected_days_left: number | null;
+}
+
+export type ScheduleSource = "csv" | "manual";
+export type ScheduleStatus = "pending" | "done" | "schedule_changed";
+
+export interface ClassScheduleEntry {
+  id: string;
+  batch_id: string;
+  teacher_id: string;
+  class_date: string;
+  topic_id: string | null;
+  topic_label: string | null;
+  source: ScheduleSource;
+  status: ScheduleStatus;
+  class_log_id: string | null;
+}
+
+export type SessionStatus = "scheduled" | "done" | "missed";
+
+export interface StaffQuranSession {
+  id: string;
+  staff_id: string;
+  campus_id: string;
+  scheduled_date: string;
+  status: SessionStatus;
+  attendance: boolean;
+  note: string | null;
+}
+
+export interface DawahCounselingSession {
+  id: string;
+  staff_id: string;
+  campus_id: string;
+  session_date: string;
+  counselee_note: string | null;
+  status: SessionStatus;
 }
 
 export interface Task {
@@ -130,6 +170,7 @@ export interface AmaliItem {
   title: string;
   sequence: number;
   is_active: boolean;
+  campus_id: string | null;
 }
 
 export interface Message {

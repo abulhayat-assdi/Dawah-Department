@@ -21,7 +21,8 @@ import {
 } from "@/app/(app)/_actions/batch";
 import { deleteBatch } from "@/app/(app)/admin/batches/actions";
 import { DeleteButton } from "@/components/delete-button";
-import type { Batch } from "@/lib/types";
+import { DailySchedule } from "@/components/daily-schedule";
+import type { Batch, ClassScheduleEntry } from "@/lib/types";
 
 interface Topic {
   id: string;
@@ -57,6 +58,7 @@ export function BatchDetail({
   topicProgress,
   assessments,
   recentLogs,
+  schedule = [],
   canEdit,
   canDelete = false,
 }: {
@@ -67,6 +69,7 @@ export function BatchDetail({
   topicProgress: TopicProgress[];
   assessments: Assessment[];
   recentLogs: ClassLog[];
+  schedule?: ClassScheduleEntry[];
   canEdit: boolean;
   canDelete?: boolean;
 }) {
@@ -113,7 +116,8 @@ export function BatchDetail({
         <div className="mb-2 flex items-center justify-between text-sm">
           <span className="font-medium text-slate-600">Overall Progress</span>
           <span className="text-slate-400">
-            Start {formatDate(batch.start_date)} · Last dawah class{" "}
+            Start {formatDate(batch.start_date)} · Expected end{" "}
+            {formatDate(batch.expected_end_date)} · Last dawah class{" "}
             {formatDate(batch.dawah_end_date)} · Farewell{" "}
             {formatDate(batch.farewell_date)}
           </span>
@@ -259,6 +263,15 @@ export function BatchDetail({
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
+                    <Label htmlFor="expected_end_date">Expected End Date</Label>
+                    <Input
+                      id="expected_end_date"
+                      name="expected_end_date"
+                      type="date"
+                      defaultValue={batch.expected_end_date ?? ""}
+                    />
+                  </div>
+                  <div>
                     <Label htmlFor="dawah_end_date">Last Dawah Class</Label>
                     <Input
                       id="dawah_end_date"
@@ -267,6 +280,8 @@ export function BatchDetail({
                       defaultValue={batch.dawah_end_date ?? ""}
                     />
                   </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label htmlFor="farewell_date">Farewell Date</Label>
                     <Input
@@ -347,6 +362,8 @@ export function BatchDetail({
           </Card>
         </div>
       </div>
+
+      <DailySchedule batchId={batch.id} entries={schedule} canEdit={canEdit} />
 
       {/* Syllabus topic checklist */}
       <Card>

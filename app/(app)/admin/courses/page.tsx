@@ -15,19 +15,16 @@ import {
 import { COURSE_CATEGORY_LABEL } from "@/lib/constants";
 import { toBn } from "@/lib/utils";
 import { createCourse, deleteCourse } from "./actions";
-import type { Campus, Course } from "@/lib/types";
+import type { Course } from "@/lib/types";
 
 export default async function CoursesPage() {
   await requireAdmin();
   const supabase = await createClient();
-  const [{ data: courseData }, { data: campusData }] = await Promise.all([
-    supabase.from("courses").select("*").order("abbreviation"),
-    supabase.from("campuses").select("*").order("name"),
-  ]);
+  const { data: courseData } = await supabase
+    .from("courses")
+    .select("*")
+    .order("abbreviation");
   const courses = (courseData ?? []) as Course[];
-  const campuses = (campusData ?? []) as Campus[];
-  const campusName = (id: string | null) =>
-    campuses.find((c) => c.id === id)?.name ?? "—";
 
   return (
     <div className="space-y-6">
@@ -48,7 +45,6 @@ export default async function CoursesPage() {
                   <tr className="border-b border-slate-100 text-left text-xs font-semibold uppercase text-slate-500">
                     <th className="px-4 py-3">Code</th>
                     <th className="px-4 py-3">Course</th>
-                    <th className="px-4 py-3">Campus</th>
                     <th className="px-4 py-3 text-center">Classes</th>
                     <th className="px-4 py-3"></th>
                   </tr>
@@ -69,9 +65,6 @@ export default async function CoursesPage() {
                         <p className="text-xs text-slate-400">
                           {COURSE_CATEGORY_LABEL[c.category]} · {c.duration_label}
                         </p>
-                      </td>
-                      <td className="px-4 py-3 text-slate-600">
-                        {campusName(c.campus_id)}
                       </td>
                       <td className="px-4 py-3 text-center text-slate-600">
                         {toBn(c.default_total_classes)}
@@ -108,17 +101,6 @@ export default async function CoursesPage() {
                 <Label htmlFor="duration_label">Duration</Label>
                 <Input id="duration_label" name="duration_label" placeholder="3 months" />
               </div>
-            </div>
-            <div>
-              <Label htmlFor="campus_id">Campus</Label>
-              <Select id="campus_id" name="campus_id" defaultValue="">
-                <option value="">— Select —</option>
-                {campuses.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

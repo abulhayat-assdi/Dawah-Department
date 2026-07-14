@@ -15,8 +15,8 @@ import {
 import { TrackerTable } from "@/components/tracker-table";
 import { FileUpload } from "@/components/file-upload";
 import { DeleteButton } from "@/components/delete-button";
-import { updateCampus, deleteCampus } from "../actions";
-import type { Campus, CourseTrackerRow } from "@/lib/types";
+import { updateCampus, deleteCampus, setCampusCourses } from "../actions";
+import type { Campus, Course, CourseTrackerRow } from "@/lib/types";
 
 export default async function CampusGatewayPage({
   params,
@@ -34,21 +34,20 @@ export default async function CampusGatewayPage({
     .maybeSingle();
   if (!campus) notFound();
 
-  // Courses of this campus → their batches via the tracker view.
-  const { data: courses } = await supabase
-    .from("courses")
-    .select("id")
-    .eq("campus_id", id);
-  const courseIds = (courses ?? []).map((c) => c.id as string);
-
-  const { data: trackerData } = courseIds.length
-    ? await supabase
-        .from("course_tracker")
-        .select("*")
-        .in("course_id", courseIds)
-        .order("status")
-    : { data: [] as CourseTrackerRow[] };
+  // Batches running at this campus → the tracker view.
+  const { data: trackerData } = await supabase
+    .from("course_tracker")
+    .select("*")
+    .eq("campus_id", id)
+    .order("status");
   const tracker = (trackerData ?? []) as CourseTrackerRow[];
+
+  const { data: courseData } = await supabase
+    .from("courses")
+    .select("*")
+    .order("abbreviation");
+  const courses = (courseData ?? []) as Course[];
+
   const c = campus as Campus;
 
   return (
@@ -95,15 +94,50 @@ export default async function CampusGatewayPage({
               defaultUrl={c.image_url}
             />
           </div>
-          <div className="flex items-center gap-3 md:col-span-2">
+          <div className="md:col-span-2">
             <Button type="submit">Save changes</Button>
-            <DeleteButton
-              action={deleteCampus}
-              id={id}
-              label="Delete campus"
-              confirmText="এই ক্যাম্পাসটি মুছে ফেলবেন?"
-            />
           </div>
+        </form>
+        <div className="flex items-center gap-3 border-t border-slate-100 p-5">
+          <DeleteButton
+            action={deleteCampus}
+            id={id}
+            label="Delete campus"
+            confirmText="এই ক্যাম্পাসটি মুছে ফেলবেন?"
+          />
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="Courses at this Campus"
+          subtitle="Select which courses currently run here — narrows the Course filter on the Tracker page"
+        />
+        <form action={setCampusCourses} className="space-y-4 p-5">
+          <input type="hidden" name="campus_id" value={id} />
+          {courses.length === 0 ? (
+            <EmptyState
+              icon="📚"
+              title="No courses yet"
+              hint="Add courses first from Admin → Courses."
+            />
+          ) : (
+            <div className="flex flex-wrap gap-3 rounded-xl border border-slate-200 p-3">
+              {courses.map((course) => (
+                <label key={course.id} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    name="course_ids"
+                    value={course.id}
+                    defaultChecked={course.campus_id === id}
+                    className="size-4 rounded border-slate-300"
+                  />
+                  {course.abbreviation} — {course.name}
+                </label>
+              ))}
+            </div>
+          )}
+          <Button type="submit">Save course assignment</Button>
         </form>
       </Card>
 

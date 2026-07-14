@@ -1,22 +1,23 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/auth";
+import { requireCoordinatorOrAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 export async function createAmaliItem(formData: FormData) {
-  await requireAdmin();
+  await requireCoordinatorOrAdmin();
   const supabase = await createClient();
   await supabase.from("amali_items").insert({
     title: String(formData.get("title") ?? "").trim(),
     sequence: Number(formData.get("sequence") ?? 0),
+    campus_id: String(formData.get("campus_id") ?? "") || null,
   });
   revalidatePath("/admin/amali");
   revalidatePath("/my/amali");
 }
 
 export async function toggleAmaliItem(formData: FormData) {
-  await requireAdmin();
+  await requireCoordinatorOrAdmin();
   const supabase = await createClient();
   await supabase
     .from("amali_items")
@@ -27,7 +28,7 @@ export async function toggleAmaliItem(formData: FormData) {
 }
 
 export async function deleteAmaliItem(formData: FormData) {
-  await requireAdmin();
+  await requireCoordinatorOrAdmin();
   const supabase = await createClient();
   await supabase.from("amali_items").delete().eq("id", String(formData.get("id")));
   revalidatePath("/admin/amali");

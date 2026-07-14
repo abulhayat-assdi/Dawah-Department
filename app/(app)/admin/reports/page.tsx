@@ -49,7 +49,7 @@ export default async function ReportsPage() {
       <Card>
         <CardHeader
           title="Monthly Report Export"
-          subtitle="One click to export the whole month's work & course progress as PDF / Word."
+          subtitle="One click to export the whole month's work, teacher performance & course progress as PDF / Word."
         />
         <form
           action="/admin/reports/export"
@@ -59,6 +59,36 @@ export default async function ReportsPage() {
           <div>
             <Label htmlFor="month">Month</Label>
             <Input id="month" name="month" type="month" defaultValue={thisMonth} />
+          </div>
+          <Button type="submit" name="format" value="pdf" variant="secondary">
+            ⬇ PDF
+          </Button>
+          <Button type="submit" name="format" value="docx">
+            ⬇ Word
+          </Button>
+        </form>
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="Yearly Tracker"
+          subtitle="A high-level overview of annual progress, exportable as PDF / Word."
+        />
+        <form
+          action="/admin/reports/export-yearly"
+          method="get"
+          className="flex flex-wrap items-end gap-3 p-5"
+        >
+          <div>
+            <Label htmlFor="year">Year</Label>
+            <Input
+              id="year"
+              name="year"
+              type="number"
+              defaultValue={new Date().getFullYear()}
+              min={2020}
+              max={2100}
+            />
           </div>
           <Button type="submit" name="format" value="pdf" variant="secondary">
             ⬇ PDF

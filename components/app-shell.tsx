@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { clsx } from "@/lib/utils";
-import { ADMIN_NAV, TEACHER_NAV, ROLE_LABEL } from "@/lib/constants";
+import { ADMIN_NAV, COORDINATOR_NAV, TEACHER_NAV, ROLE_LABEL } from "@/lib/constants";
 import type { Profile } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -22,7 +22,12 @@ export function AppShell({
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const nav = profile.role === "super_admin" ? ADMIN_NAV : TEACHER_NAV;
+  const nav =
+    profile.role === "super_admin"
+      ? ADMIN_NAV
+      : profile.role === "coordinator"
+        ? COORDINATOR_NAV
+        : TEACHER_NAV;
 
   async function signOut() {
     const supabase = createClient();

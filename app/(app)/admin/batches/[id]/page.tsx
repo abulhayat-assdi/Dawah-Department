@@ -45,6 +45,7 @@ export default async function AdminBatchDetailPage({
         topicProgress={data.topicProgress}
         assessments={data.assessments}
         recentLogs={data.recentLogs}
+        schedule={data.schedule}
         canEdit
         canDelete
       />

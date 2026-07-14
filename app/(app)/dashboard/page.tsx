@@ -49,6 +49,55 @@ export default async function DashboardPage() {
     );
   }
 
+  if (profile.role === "coordinator") {
+    const { data: campusLinks } = await supabase
+      .from("teacher_campuses")
+      .select("campus_id")
+      .eq("teacher_id", profile.id);
+    const campusIds = (campusLinks ?? []).map((r) => r.campus_id as string);
+    const campusCount = new Set(campusIds).size;
+
+    const { data: batchRows } = campusIds.length
+      ? await supabase.from("batches").select("id, course_id").in("campus_id", campusIds)
+      : { data: [] as { id: string; course_id: string }[] };
+    const batchIds = (batchRows ?? []).map((b) => b.id as string);
+    const courseCount = new Set((batchRows ?? []).map((b) => b.course_id)).size;
+
+    const [tracker, teacherRows, feedback, notices] = await Promise.all([
+      batchIds.length
+        ? supabase.from("course_tracker").select("*").in("batch_id", batchIds).order("status")
+        : Promise.resolve({ data: [] }),
+      batchIds.length
+        ? supabase.from("batch_teachers").select("teacher_id").in("batch_id", batchIds)
+        : Promise.resolve({ data: [] as { teacher_id: string }[] }),
+      supabase
+        .from("feedback")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(5),
+      noticesQuery,
+    ]);
+    const teacherCount = new Set(
+      (teacherRows.data ?? []).map((r) => r.teacher_id as string),
+    ).size;
+
+    return (
+      <AdminDashboard
+        name={profile.full_name}
+        photoUrl={profile.photo_url}
+        counts={{
+          campuses: campusCount,
+          courses: courseCount,
+          teachers: teacherCount,
+          batches: tracker.data?.length ?? 0,
+        }}
+        tracker={tracker.data ?? []}
+        feedback={feedback.data ?? []}
+        notices={notices.data ?? []}
+      />
+    );
+  }
+
   // Teacher view
   const { data: assignments } = await supabase
     .from("batch_teachers")

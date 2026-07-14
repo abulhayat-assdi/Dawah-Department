@@ -40,6 +40,7 @@ export default async function MyBatchDetailPage({
         topicProgress={data.topicProgress}
         assessments={data.assessments}
         recentLogs={data.recentLogs}
+        schedule={data.schedule}
         canEdit={canEdit}
       />
     </div>

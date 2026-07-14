@@ -15,12 +15,11 @@ export default async function MemberDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: member }, { data: campusData }, { data: links }] =
-    await Promise.all([
-      supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
-      supabase.from("campuses").select("*").order("name"),
-      supabase.from("teacher_campuses").select("campus_id").eq("teacher_id", id),
-    ]);
+  const [{ data: member }, { data: campusData }, { data: links }] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
+    supabase.from("campuses").select("*").order("name"),
+    supabase.from("teacher_campuses").select("campus_id").eq("teacher_id", id),
+  ]);
 
   if (!member) notFound();
 
