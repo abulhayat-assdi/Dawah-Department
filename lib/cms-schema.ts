@@ -171,4 +171,12 @@ export const CMS_TABS: { key: string; label: string; fields: CmsField[] }[] = [
       { key: "heroBody", label: "Hero body", type: "textarea" },
     ],
   },
+  {
+    key: "notices",
+    label: "Notice board page",
+    fields: [
+      { key: "heroTitle", label: "Hero title", type: "text" },
+      { key: "heroBody", label: "Hero body", type: "textarea" },
+    ],
+  },
 ];

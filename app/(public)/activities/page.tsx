@@ -1,55 +1,61 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getContent } from "@/lib/content";
 import { PublicHero } from "@/components/public-hero";
-import { Reveal } from "@/components/reveal";
-import type { Campus } from "@/lib/types";
+import { CampusActivityTabs, type RunningCourseRow } from "@/components/campus-activity-tabs";
+import type { Campus, Course } from "@/lib/types";
 
 export default async function ActivitiesPage() {
   const [act, supabase] = await Promise.all([getContent("activities"), createClient()]);
-  const { data } = await supabase.from("campuses").select("*").order("name");
-  const campuses = (data ?? []) as Campus[];
+  const [{ data: campusData }, { data: batchData }] = await Promise.all([
+    supabase.from("campuses").select("*").order("name"),
+    supabase
+      .from("batches")
+      .select("campus_id, course_id, active_student_count")
+      .eq("status", "ongoing")
+      .not("campus_id", "is", null),
+  ]);
+  const campuses = (campusData ?? []) as Campus[];
+  const batches = (batchData ?? []) as {
+    campus_id: string;
+    course_id: string;
+    active_student_count: number;
+  }[];
+
+  const courseIds = [...new Set(batches.map((b) => b.course_id))];
+  const { data: courseData } = courseIds.length
+    ? await supabase.from("courses").select("*").in("id", courseIds)
+    : { data: [] as Course[] };
+  const coursesById = new Map((courseData ?? []).map((c) => [c.id, c as Course]));
+
+  const byKey = new Map<string, RunningCourseRow>();
+  for (const b of batches) {
+    const course = coursesById.get(b.course_id);
+    if (!course) continue;
+    const key = `${b.campus_id}:${b.course_id}`;
+    const existing = byKey.get(key);
+    if (existing) {
+      existing.batch_count += 1;
+      existing.active_student_count += b.active_student_count;
+    } else {
+      byKey.set(key, {
+        course_id: course.id,
+        course_name: course.name,
+        abbreviation: course.abbreviation,
+        duration_label: course.duration_label,
+        campus_id: b.campus_id,
+        batch_count: 1,
+        active_student_count: b.active_student_count,
+      });
+    }
+  }
+  const rows = [...byKey.values()];
 
   return (
     <div>
       <PublicHero title={act.heroTitle} body={act.heroBody} />
 
       <section className="mx-auto max-w-6xl px-4 py-16 lg:px-6">
-        {campuses.length === 0 ? (
-          <p className="text-center text-slate-400">শীঘ্রই ক্যাম্পাসের তথ্য যুক্ত হবে।</p>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {campuses.map((c, i) => (
-              <Reveal
-                key={c.id}
-                delay={i * 90}
-                as="article"
-                className="overflow-hidden rounded-2xl border border-t-4 border-slate-200 border-t-brand-700 bg-white shadow-sm transition duration-300 hover:-translate-y-1.5 hover:shadow-lg"
-              >
-                <div className="bg-brand-50/60">
-                  {c.image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={c.image_url} alt={c.name} className="aspect-video w-full object-cover" />
-                  ) : (
-                    <div className="grid aspect-video place-items-center text-5xl text-brand-200">
-                      🏫
-                    </div>
-                  )}
-                </div>
-                <div className="p-6 text-center">
-                  <h3 className="text-lg font-bold text-slate-900">{c.name}</h3>
-                  {c.address && <p className="mt-1 text-sm text-slate-500">{c.address}</p>}
-                  <Link
-                    href={`/activities/${c.id}`}
-                    className="mt-4 block rounded-xl border border-gold-400 px-4 py-2.5 text-sm font-semibold text-gold-700 hover:bg-gold-50"
-                  >
-                    বিস্তারিত কার্যক্রম →
-                  </Link>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        )}
+        <CampusActivityTabs campuses={campuses} rows={rows} />
       </section>
     </div>
   );

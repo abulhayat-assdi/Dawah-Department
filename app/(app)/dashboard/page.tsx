@@ -45,6 +45,7 @@ export default async function DashboardPage() {
         tracker={tracker.data ?? []}
         feedback={feedback.data ?? []}
         notices={notices.data ?? []}
+        canManageNotices
       />
     );
   }
@@ -94,6 +95,7 @@ export default async function DashboardPage() {
         tracker={tracker.data ?? []}
         feedback={feedback.data ?? []}
         notices={notices.data ?? []}
+        canManageNotices
       />
     );
   }

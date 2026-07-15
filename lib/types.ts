@@ -67,6 +67,7 @@ export interface Batch {
   farewell_date: string | null;
   total_classes: number;
   completed_classes: number;
+  active_student_count: number;
   midterm_status: ExamStatus;
   final_status: ExamStatus;
   status: BatchStatus;

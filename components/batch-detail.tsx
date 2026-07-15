@@ -110,6 +110,12 @@ export function BatchDetail({
           icon="📖"
           accent="brand"
         />
+        <StatCard
+          label="Active Students"
+          value={toBn(batch.active_student_count)}
+          icon="🧑‍🎓"
+          accent="green"
+        />
       </div>
 
       <Card className="p-5">
@@ -213,6 +219,17 @@ export function BatchDetail({
                       name="total_classes"
                       type="number"
                       defaultValue={batch.total_classes}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="active_student_count">Active Students</Label>
+                    <Input
+                      id="active_student_count"
+                      name="active_student_count"
+                      type="number"
+                      defaultValue={batch.active_student_count}
                     />
                   </div>
                 </div>

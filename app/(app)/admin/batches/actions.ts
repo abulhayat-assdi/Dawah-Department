@@ -25,6 +25,7 @@ export async function createBatch(formData: FormData) {
     dawah_end_date: String(formData.get("dawah_end_date") ?? "") || null,
     farewell_date: String(formData.get("farewell_date") ?? "") || null,
     total_classes: total,
+    active_student_count: Number(formData.get("active_student_count") ?? 0),
     status: String(formData.get("status") ?? "will_start"),
   });
   revalidatePath("/admin/batches");

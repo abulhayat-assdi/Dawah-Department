@@ -19,6 +19,7 @@ export function AdminDashboard({
   tracker,
   feedback,
   notices,
+  canManageNotices,
 }: {
   name: string;
   photoUrl?: string | null;
@@ -26,6 +27,7 @@ export function AdminDashboard({
   tracker: CourseTrackerRow[];
   feedback: FeedbackRow[];
   notices: Notice[];
+  canManageNotices: boolean;
 }) {
   const ongoing = tracker.filter((t) => t.status === "ongoing").length;
 
@@ -45,7 +47,7 @@ export function AdminDashboard({
         <StatCard label="Ongoing Batches" value={toBn(ongoing)} icon="🗂️" accent="yellow" />
       </div>
 
-      <NoticeBoard notices={notices} isAdmin />
+      <NoticeBoard notices={notices} isAdmin={canManageNotices} />
 
       <Card>
         <CardHeader

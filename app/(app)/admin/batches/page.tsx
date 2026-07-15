@@ -97,6 +97,15 @@ export default async function BatchesPage() {
             <Input id="total_classes" name="total_classes" type="number" defaultValue={0} />
           </div>
           <div>
+            <Label htmlFor="active_student_count">Active Students</Label>
+            <Input
+              id="active_student_count"
+              name="active_student_count"
+              type="number"
+              defaultValue={0}
+            />
+          </div>
+          <div>
             <Label htmlFor="start_date">Start Date</Label>
             <Input id="start_date" name="start_date" type="date" />
           </div>

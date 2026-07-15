@@ -27,6 +27,7 @@ export async function updateBatchFields(formData: FormData) {
     .update({
       batch_no: String(formData.get("batch_no") ?? "").trim(),
       total_classes: Number(formData.get("total_classes") ?? 0),
+      active_student_count: Number(formData.get("active_student_count") ?? 0),
       midterm_status: String(formData.get("midterm_status") ?? "none"),
       final_status: String(formData.get("final_status") ?? "none"),
       status: String(formData.get("status") ?? "will_start"),

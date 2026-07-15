@@ -31,7 +31,7 @@ export function NotificationBell({ userId }: { userId: string }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
     // Light polling keeps the count fresh without a realtime subscription.
-    const t = setInterval(load, 60_000);
+    const t = setInterval(load, 15_000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);

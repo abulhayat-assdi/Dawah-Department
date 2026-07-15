@@ -54,8 +54,12 @@ export default async function TasksPage() {
   const teachers = scopedTeacherIds
     ? allTeachers.filter((t) => scopedTeacherIds.has(t.id))
     : allTeachers;
+  // Super admin / campus coordinator can also assign a task to themselves.
+  const assignees = teachers.some((t) => t.id === profile.id)
+    ? teachers
+    : [profile, ...teachers];
   const name = (id: string | null) =>
-    allTeachers.find((t) => t.id === id)?.full_name ?? "Unassigned";
+    assignees.find((t) => t.id === id)?.full_name ?? "Unassigned";
 
   return (
     <div className="space-y-6">
@@ -75,9 +79,10 @@ export default async function TasksPage() {
             <Label htmlFor="assigned_to">Assign to</Label>
             <Select id="assigned_to" name="assigned_to" defaultValue="">
               <option value="">— Select —</option>
-              {teachers.map((t) => (
+              {assignees.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.full_name}
+                  {t.id === profile.id ? " (Myself)" : ""}
                 </option>
               ))}
             </Select>

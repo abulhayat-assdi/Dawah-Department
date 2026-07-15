@@ -33,7 +33,11 @@ Open Supabase → **SQL Editor** and run each file from the `supabase/` folder, 
 9. `resources_bucket.sql` — Resource Center file bucket
 10. `faculty.sql` — public Faculty list (CMS-managed)
 11. `campus_image.sql` — campus image + public read of campuses/courses
-12. `make_super_admin.sql` — promote your account (see step 4)
+12. `batch_student_count.sql` — active student count per batch + public read of batches
+13. `notices_public.sql` — coordinators can post notices; public read of notices
+14. `feedback_admin_review.sql` — coordinators can read/mark-read/delete feedback
+15. `messages_notify.sql` — new direct messages raise a notification-bell alert
+16. `make_super_admin.sql` — promote your account (see step 4)
 
 > Upgrading an existing DB that predates the velocity projection? Also run `projection.sql`.
 
