@@ -7,15 +7,15 @@ export default async function DashboardPage() {
   const profile = await requireProfile();
   const supabase = await createClient();
 
-  // Notices are shown to every role on the dashboard.
+  // Notices are shown to every role on the dashboard (RLS scopes rows by campus).
   const noticesQuery = supabase
     .from("notices")
-    .select("*")
+    .select("*, campus:campuses(name)")
     .order("created_at", { ascending: false })
     .limit(12);
 
   if (profile.role === "super_admin") {
-    const [campuses, courses, teachers, tracker, feedback, notices] =
+    const [campuses, courses, teachers, tracker, feedback, notices, allCampuses] =
       await Promise.all([
         supabase.from("campuses").select("id", { count: "exact", head: true }),
         supabase.from("courses").select("id", { count: "exact", head: true }),
@@ -30,6 +30,7 @@ export default async function DashboardPage() {
           .order("created_at", { ascending: false })
           .limit(5),
         noticesQuery,
+        supabase.from("campuses").select("id, name").order("name"),
       ]);
 
     return (
@@ -46,6 +47,7 @@ export default async function DashboardPage() {
         feedback={feedback.data ?? []}
         notices={notices.data ?? []}
         canManageNotices
+        noticeCampuses={allCampuses.data ?? []}
       />
     );
   }
@@ -64,7 +66,7 @@ export default async function DashboardPage() {
     const batchIds = (batchRows ?? []).map((b) => b.id as string);
     const courseCount = new Set((batchRows ?? []).map((b) => b.course_id)).size;
 
-    const [tracker, teacherRows, feedback, notices] = await Promise.all([
+    const [tracker, teacherRows, feedback, notices, myCampuses] = await Promise.all([
       batchIds.length
         ? supabase.from("course_tracker").select("*").in("batch_id", batchIds).order("status")
         : Promise.resolve({ data: [] }),
@@ -77,6 +79,9 @@ export default async function DashboardPage() {
         .order("created_at", { ascending: false })
         .limit(5),
       noticesQuery,
+      campusIds.length
+        ? supabase.from("campuses").select("id, name").in("id", campusIds).order("name")
+        : Promise.resolve({ data: [] as { id: string; name: string }[] }),
     ]);
     const teacherCount = new Set(
       (teacherRows.data ?? []).map((r) => r.teacher_id as string),
@@ -96,6 +101,7 @@ export default async function DashboardPage() {
         feedback={feedback.data ?? []}
         notices={notices.data ?? []}
         canManageNotices
+        noticeCampuses={myCampuses.data ?? []}
       />
     );
   }

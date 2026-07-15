@@ -14,7 +14,6 @@ const LINKS = [
   { href: "/faculty", label: "Faculty" },
   { href: "/academic", label: "Academic" },
   { href: "/activities", label: "Dawah Activities" },
-  { href: "/notices", label: "Notice Board" },
   { href: "/contact", label: "Contact" },
 ];
 

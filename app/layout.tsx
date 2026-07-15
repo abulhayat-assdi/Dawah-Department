@@ -30,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="bn"
       className={`${inter.variable} ${amiri.variable} h-full antialiased`}
     >
       <body className="min-h-full">{children}</body>

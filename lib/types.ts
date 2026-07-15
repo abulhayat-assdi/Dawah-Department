@@ -190,6 +190,8 @@ export interface Notice {
   id: string;
   title: string;
   body: string | null;
+  campus_id: string | null;
+  campus: { name: string } | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Input, Textarea, Label } from "@/components/ui";
+import { Button, Input, Textarea, Label, Select } from "@/components/ui";
 import { formatDate } from "@/lib/utils";
 import { createNotice, updateNotice, deleteNotice } from "@/app/(app)/_actions/notices";
 import type { Notice } from "@/lib/types";
@@ -9,9 +9,11 @@ import type { Notice } from "@/lib/types";
 export function NoticeBoard({
   notices,
   isAdmin,
+  campuses = [],
 }: {
   notices: Notice[];
   isAdmin: boolean;
+  campuses?: { id: string; name: string }[];
 }) {
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -45,6 +47,17 @@ export function NoticeBoard({
             <Label htmlFor="nb">Details</Label>
             <Textarea id="nb" name="body" placeholder="Write the notice…" />
           </div>
+          <div>
+            <Label htmlFor="ncmp">Campus</Label>
+            <Select id="ncmp" name="campus_id" defaultValue="">
+              <option value="">সব ক্যাম্পাস (All Campuses)</option>
+              {campuses.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </Select>
+          </div>
           <div className="flex gap-2">
             <Button type="submit">Publish</Button>
             <Button type="button" variant="secondary" onClick={() => setAdding(false)}>
@@ -72,6 +85,17 @@ export function NoticeBoard({
                 <input type="hidden" name="id" value={n.id} />
                 <Input name="title" defaultValue={n.title} required />
                 <Textarea name="body" defaultValue={n.body ?? ""} />
+                <div>
+                  <Label htmlFor={`ecmp-${n.id}`}>Campus</Label>
+                  <Select id={`ecmp-${n.id}`} name="campus_id" defaultValue={n.campus_id ?? ""}>
+                    <option value="">সব ক্যাম্পাস (All Campuses)</option>
+                    {campuses.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
                 <div className="flex gap-2">
                   <Button type="submit">Save</Button>
                   <Button
@@ -114,9 +138,14 @@ export function NoticeBoard({
                 {n.body && (
                   <p className="mt-2 flex-1 text-sm text-slate-600">{n.body}</p>
                 )}
-                <div className="mt-4 flex items-center gap-1.5 border-t border-slate-100 pt-3 text-xs text-slate-400">
-                  <span>📅</span>
-                  {formatDate(n.created_at)}
+                <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-slate-100 pt-3 text-xs text-slate-400">
+                  <span className="flex items-center gap-1.5">
+                    <span>📅</span>
+                    {formatDate(n.created_at)}
+                  </span>
+                  <span className="flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 font-medium text-brand-700">
+                    🏛️ {n.campus?.name ?? "সব ক্যাম্পাস"}
+                  </span>
                 </div>
               </article>
             ),

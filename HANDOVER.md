@@ -34,12 +34,21 @@ Open Supabase → **SQL Editor** and run each file from the `supabase/` folder, 
 10. `faculty.sql` — public Faculty list (CMS-managed)
 11. `campus_image.sql` — campus image + public read of campuses/courses
 12. `batch_student_count.sql` — active student count per batch + public read of batches
-13. `notices_public.sql` — coordinators can post notices; public read of notices
+13. `notices_public.sql` — coordinators can post notices
 14. `feedback_admin_review.sql` — coordinators can read/mark-read/delete feedback
 15. `messages_notify.sql` — new direct messages raise a notification-bell alert
 16. `make_super_admin.sql` — promote your account (see step 4)
+17. `notices_campus_scope.sql` — Notice Board is member-only (no public/anon read) and
+    campus-scoped (a notice targets one campus or "all campuses"). **Requires**
+    `01_add_coordinator_role.sql` and `02_coordinator_and_batches.sql` to have been run first
+    (needs `is_coordinator_of_campus()`).
 
 > Upgrading an existing DB that predates the velocity projection? Also run `projection.sql`.
+>
+> Note: this list doesn't yet cover every file in `supabase/` (e.g. `01_add_coordinator_role.sql`,
+> `02_coordinator_and_batches.sql`, `messages_dm.sql`, `syllabus.sql`, `class_schedule.sql`,
+> `staff_tracker.sql`, `amali_campus.sql`, `batch_dawah_date.sql`) — check the folder and run any
+> file relevant to features you've enabled, in the order implied by their comments.
 
 ## 3. Storage buckets
 

@@ -8,10 +8,12 @@ export async function createNotice(formData: FormData) {
   const profile = await requireCoordinatorOrAdmin();
   const title = String(formData.get("title") ?? "").trim();
   if (!title) return;
+  const campusId = String(formData.get("campus_id") ?? "").trim();
   const supabase = await createClient();
   await supabase.from("notices").insert({
     title,
     body: String(formData.get("body") ?? "").trim() || null,
+    campus_id: campusId || null,
     created_by: profile.id,
   });
   revalidatePath("/dashboard");
@@ -19,12 +21,14 @@ export async function createNotice(formData: FormData) {
 
 export async function updateNotice(formData: FormData) {
   await requireCoordinatorOrAdmin();
+  const campusId = String(formData.get("campus_id") ?? "").trim();
   const supabase = await createClient();
   await supabase
     .from("notices")
     .update({
       title: String(formData.get("title") ?? "").trim(),
       body: String(formData.get("body") ?? "").trim() || null,
+      campus_id: campusId || null,
     })
     .eq("id", String(formData.get("id")));
   revalidatePath("/dashboard");

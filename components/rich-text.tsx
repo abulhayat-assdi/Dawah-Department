@@ -6,9 +6,11 @@ import { clsx } from "@/lib/utils";
  */
 function sanitize(html: string): string {
   return html
-    .replace(/<\s*(script|style)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
+    .replace(/<\s*(script|style|iframe|object|embed)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
+    .replace(/<\s*(iframe|object|embed)[^>]*\/?>/gi, "")
     .replace(/\son\w+\s*=\s*"[^"]*"/gi, "")
     .replace(/\son\w+\s*=\s*'[^']*'/gi, "")
+    .replace(/\son\w+\s*=\s*[^\s>]+/gi, "")
     .replace(/javascript:/gi, "");
 }
 

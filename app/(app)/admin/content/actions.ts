@@ -47,7 +47,6 @@ function revalidatePublic() {
   revalidatePath("/faculty");
   revalidatePath("/academic");
   revalidatePath("/activities");
-  revalidatePath("/notices");
   revalidatePath("/contact");
   revalidatePath("/admin/content");
 }

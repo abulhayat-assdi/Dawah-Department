@@ -104,10 +104,6 @@ export interface SiteContentMap {
     heroTitle: string;
     heroBody: string;
   };
-  notices: {
-    heroTitle: string;
-    heroBody: string;
-  };
 }
 
 export const CONTENT_DEFAULTS: SiteContentMap = {
@@ -272,10 +268,6 @@ export const CONTENT_DEFAULTS: SiteContentMap = {
     heroTitle: "স্বনামধন্য শিক্ষক মন্ডলী",
     heroBody:
       "আমাদের অভিজ্ঞ ও প্রজ্ঞাবান শিক্ষকদের একটি তালিকা যারা নিরলসভাবে জ্ঞানের মশাল বয়ে নিয়ে চলেছেন।",
-  },
-  notices: {
-    heroTitle: "নোটিশ বোর্ড",
-    heroBody: "দাওয়াহ বিভাগের সকল ঘোষণা ও নোটিশ এখানে প্রকাশ করা হয়।",
   },
 };
 
