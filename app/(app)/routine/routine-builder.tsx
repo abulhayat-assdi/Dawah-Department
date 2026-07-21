@@ -1,22 +1,38 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { Label, Input, Textarea, Select, Button } from "@/components/ui";
 import { DAYS_OF_WEEK, ROUTINE_CLASS_TYPE } from "@/lib/constants";
 import { toTimeInput } from "@/lib/utils";
 import type { CampusRoutine, RoutineClassType } from "@/lib/types";
-import { saveRoutine, deleteRoutine } from "./actions";
+import { saveRoutine, deleteRoutine, type RoutineFormState } from "./actions";
 import type { CampusOpt, RoutineBatch } from "./routine-viewer";
 
 export function RoutineBuilder({
   campuses,
   batches,
   routines,
+  onSaved,
 }: {
   campuses: CampusOpt[];
   batches: RoutineBatch[];
   routines: CampusRoutine[];
+  onSaved?: () => void;
 }) {
+  const [state, formAction] = useActionState<RoutineFormState, FormData>(
+    saveRoutine,
+    null,
+  );
+
+  // Collapse the builder back to the overview once a save succeeds. Guarded
+  // so it only fires once per new action result (see amali-form-modal.tsx
+  // for the same pattern).
+  const [handled, setHandled] = useState<RoutineFormState>(null);
+  if (state && state !== handled) {
+    setHandled(state);
+    if (state.ok) onSaved?.();
+  }
+
   const [campusId, setCampusId] = useState("");
   const [batchId, setBatchId] = useState("");
 
@@ -77,7 +93,7 @@ export function RoutineBuilder({
   }
 
   return (
-    <form action={saveRoutine} className="grid gap-4 p-5 md:grid-cols-2">
+    <form action={formAction} className="grid gap-4 p-5 md:grid-cols-2">
       {/* --------------------------------------------- Campus & Batch */}
       <div>
         <Label htmlFor="campus_id">Campus</Label>

@@ -10,10 +10,13 @@ import {
   Button,
   EmptyState,
 } from "@/components/ui";
-import { createAmaliItem, toggleAmaliItem, deleteAmaliItem } from "./actions";
-import { getAmaliMonthlyHistory } from "@/lib/amali-data";
+import { toggleAmaliItem, deleteAmaliItem } from "./actions";
+import { AmaliFormModal } from "./amali-form-modal";
+import { getAmaliMonthlyHistory, getAmaliMonthlyHistoryAll } from "@/lib/amali-data";
 import { formatDate } from "@/lib/utils";
 import type { AmaliItem, Campus } from "@/lib/types";
+
+const ALL_CAMPUSES = "all";
 
 export default async function AdminAmaliPage({
   searchParams,
@@ -33,7 +36,7 @@ export default async function AdminAmaliPage({
   }
 
   const [{ data }, { data: campusData }] = await Promise.all([
-    supabase.from("amali_items").select("*").order("sequence").order("created_at"),
+    supabase.from("amali_items").select("*").order("start_date").order("created_at"),
     campusIds
       ? campusIds.length
         ? supabase.from("campuses").select("*").in("id", campusIds).order("name")
@@ -45,107 +48,46 @@ export default async function AdminAmaliPage({
   const campusName = (id: string | null) =>
     id ? campuses.find((c) => c.id === id)?.name ?? "—" : "Global (every campus)";
 
+  const today = new Date().toISOString().slice(0, 10);
+  const isCompleted = (it: AmaliItem) => Boolean(it.end_date) && it.end_date! < today;
+  const activeItems = items.filter((it) => !isCompleted(it));
+  const completedItems = items.filter(isCompleted);
+
   const sp = await searchParams;
-  const historyCampus = String(sp.history_campus ?? campuses[0]?.id ?? "");
+  const historyCampus = String(sp.history_campus ?? ALL_CAMPUSES);
   const historyMonth = String(sp.history_month ?? new Date().toISOString().slice(0, 7));
-  const history = historyCampus
-    ? await getAmaliMonthlyHistory(historyCampus, historyMonth)
-    : null;
+  const singleHistory =
+    historyCampus !== ALL_CAMPUSES && historyCampus
+      ? await getAmaliMonthlyHistory(historyCampus, historyMonth)
+      : null;
+  const allHistory =
+    historyCampus === ALL_CAMPUSES ? await getAmaliMonthlyHistoryAll(historyMonth) : null;
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="আমলি চেকলিস্ট পরিচালনা"
         subtitle="এখানে যেসব আইটেম যোগ করবেন, সেগুলোই সদস্যদের ড্যাশবোর্ডে দৈনিক চেকলিস্ট হিসেবে দেখা যাবে।"
+        action={<AmaliFormModal campuses={campuses} />}
       />
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader title="চেকলিস্ট আইটেম" subtitle={`মোট ${items.length} টি`} />
-          {items.length === 0 ? (
-            <EmptyState icon="📿" title="কোনো আইটেম নেই" />
-          ) : (
-            <ul className="divide-y divide-slate-50">
-              {items.map((it) => (
-                <li
-                  key={it.id}
-                  className="flex items-center justify-between gap-3 px-5 py-3.5"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="grid size-7 place-items-center rounded-lg bg-slate-100 text-xs font-semibold text-slate-500">
-                      {it.sequence}
-                    </span>
-                    <div>
-                      <p
-                        className={
-                          it.is_active
-                            ? "font-medium text-slate-800"
-                            : "font-medium text-slate-400 line-through"
-                        }
-                      >
-                        {it.title}
-                      </p>
-                      <p className="text-xs text-slate-400">{campusName(it.campus_id)}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <form action={toggleAmaliItem}>
-                      <input type="hidden" name="id" value={it.id} />
-                      <input
-                        type="hidden"
-                        name="is_active"
-                        value={(!it.is_active).toString()}
-                      />
-                      <Button variant="ghost" className="text-xs">
-                        {it.is_active ? "নিষ্ক্রিয়" : "সক্রিয়"}
-                      </Button>
-                    </form>
-                    <form action={deleteAmaliItem}>
-                      <input type="hidden" name="id" value={it.id} />
-                      <Button variant="ghost" className="text-xs text-red-600">
-                        মুছুন
-                      </Button>
-                    </form>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
+      <Card>
+        <CardHeader title="চলমান আমল" subtitle={`মোট ${activeItems.length} টি`} />
+        {activeItems.length === 0 ? (
+          <EmptyState icon="📿" title="কোনো চলমান আমল নেই" />
+        ) : (
+          <AmaliList items={activeItems} campusName={campusName} today={today} />
+        )}
+      </Card>
 
-        <Card className="h-fit">
-          <CardHeader title="নতুন আইটেম" />
-          <form action={createAmaliItem} className="space-y-4 p-5">
-            <div>
-              <Label htmlFor="title">শিরোনাম</Label>
-              <Input id="title" name="title" required placeholder="যেমন: তাহাজ্জুদ" />
-            </div>
-            <div>
-              <Label htmlFor="sequence">ক্রম (sequence)</Label>
-              <Input
-                id="sequence"
-                name="sequence"
-                type="number"
-                defaultValue={items.length + 1}
-              />
-            </div>
-            <div>
-              <Label htmlFor="campus_id">Campus (leave blank for a global routine)</Label>
-              <Select id="campus_id" name="campus_id" defaultValue="">
-                <option value="">Global — every campus</option>
-                {campuses.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </Select>
-            </div>
-            <Button type="submit" className="w-full">
-              যোগ করুন
-            </Button>
-          </form>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader title="সম্পন্ন আমল" subtitle={`মোট ${completedItems.length} টি`} />
+        {completedItems.length === 0 ? (
+          <EmptyState icon="✅" title="এখনো কোনো আমলের মেয়াদ শেষ হয়নি" />
+        ) : (
+          <AmaliList items={completedItems} campusName={campusName} today={today} />
+        )}
+      </Card>
 
       <Card>
         <CardHeader
@@ -156,6 +98,7 @@ export default async function AdminAmaliPage({
           <div>
             <Label htmlFor="history_campus">Campus</Label>
             <Select id="history_campus" name="history_campus" defaultValue={historyCampus}>
+              <option value={ALL_CAMPUSES}>সব ক্যাম্পাস (All Campuses)</option>
               {campuses.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -179,30 +122,108 @@ export default async function AdminAmaliPage({
           </div>
         </form>
         <div className="border-t border-slate-100 p-5">
-          {!history ? (
+          {allHistory ? (
+            allHistory.length === 0 ? (
+              <p className="text-sm text-slate-500">No campuses found.</p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {allHistory.map((h) => (
+                  <div
+                    key={h.campusId}
+                    className="rounded-2xl border border-slate-200 p-4"
+                  >
+                    <p className="font-semibold text-slate-800">{h.campusName}</p>
+                    {h.completedRoutines.length === 0 ? (
+                      <p className="mt-2 text-xs text-slate-500">
+                        {h.monthLabel}-এ কোনো আমল সম্পন্ন হয়নি।
+                      </p>
+                    ) : (
+                      <ul className="mt-2 space-y-1 text-sm text-slate-700">
+                        {h.completedRoutines.map((title) => (
+                          <li key={title}>• {title}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )
+          ) : !singleHistory ? (
             <EmptyState icon="📿" title="Add a campus first to see its monthly history" />
-          ) : history.completedRoutines.length === 0 ? (
+          ) : singleHistory.completedRoutines.length === 0 ? (
             <p className="text-sm text-slate-500">
-              No routine reached a 70% completion rate for {history.campusName} in{" "}
-              {history.monthLabel} yet.
+              {singleHistory.monthLabel}-এ {singleHistory.campusName}-এর কোনো আমল সম্পন্ন হয়নি।
             </p>
           ) : (
-            <p className="text-sm leading-relaxed text-slate-700">
-              In <span className="font-semibold">{history.monthLabel}</span>,{" "}
-              <span className="font-semibold">{history.campusName}</span> successfully
-              completed these Amali routines —{" "}
-              <span className="font-medium">{history.completedRoutines.join(", ")}</span>
-              {history.rangeStart && history.rangeEnd && (
-                <>
-                  {" "}
-                  from {formatDate(history.rangeStart)} to {formatDate(history.rangeEnd)}
-                </>
-              )}
-              .
-            </p>
+            <ul className="space-y-1.5 text-sm text-slate-700">
+              {singleHistory.completedRoutines.map((title) => (
+                <li key={title}>• {title}</li>
+              ))}
+            </ul>
           )}
         </div>
       </Card>
     </div>
+  );
+}
+
+function dateRangeLabel(it: AmaliItem, today: string): string {
+  if (it.start_date && it.end_date) {
+    return `${formatDate(it.start_date)} – ${formatDate(it.end_date)}`;
+  }
+  if (it.start_date) {
+    return it.start_date > today
+      ? `${formatDate(it.start_date)} থেকে শুরু হবে`
+      : `${formatDate(it.start_date)} থেকে চলমান`;
+  }
+  if (it.end_date) return `${formatDate(it.end_date)} পর্যন্ত`;
+  return "চলমান (কোনো নির্দিষ্ট মেয়াদ নেই)";
+}
+
+function AmaliList({
+  items,
+  campusName,
+  today,
+}: {
+  items: AmaliItem[];
+  campusName: (id: string | null) => string;
+  today: string;
+}) {
+  return (
+    <ul className="divide-y divide-slate-50">
+      {items.map((it) => (
+        <li key={it.id} className="flex items-center justify-between gap-3 px-5 py-3.5">
+          <div>
+            <p
+              className={
+                it.is_active
+                  ? "font-medium text-slate-800"
+                  : "font-medium text-slate-400 line-through"
+              }
+            >
+              {it.title}
+            </p>
+            <p className="mt-0.5 text-xs text-slate-400">
+              {campusName(it.campus_id)} · {dateRangeLabel(it, today)}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <form action={toggleAmaliItem}>
+              <input type="hidden" name="id" value={it.id} />
+              <input type="hidden" name="is_active" value={(!it.is_active).toString()} />
+              <Button variant="ghost" className="text-xs">
+                {it.is_active ? "নিষ্ক্রিয়" : "সক্রিয়"}
+              </Button>
+            </form>
+            <form action={deleteAmaliItem}>
+              <input type="hidden" name="id" value={it.id} />
+              <Button variant="ghost" className="text-xs text-red-600">
+                মুছুন
+              </Button>
+            </form>
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }

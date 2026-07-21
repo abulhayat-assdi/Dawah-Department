@@ -119,7 +119,7 @@ export default async function DashboardPage() {
   const batchIds = (assignments ?? []).map((a) => a.batch_id);
   const today = new Date().toISOString().slice(0, 10);
 
-  const [tracker, tasks, report, notices, amaliItems, amaliLogs] = await Promise.all([
+  const [tracker, tasks, notices, amaliItems, amaliLogs] = await Promise.all([
     batchIds.length
       ? supabase.from("course_tracker").select("*").in("batch_id", batchIds)
       : Promise.resolve({ data: [] }),
@@ -129,18 +129,14 @@ export default async function DashboardPage() {
       .eq("assigned_to", profile.id)
       .neq("status", "done")
       .order("due_date", { nullsFirst: false }),
-    supabase
-      .from("daily_reports")
-      .select("id")
-      .eq("teacher_id", profile.id)
-      .eq("report_date", today)
-      .maybeSingle(),
     noticesQuery,
     supabase
       .from("amali_items")
       .select("*")
       .eq("is_active", true)
-      .order("sequence")
+      .or(`start_date.is.null,start_date.lte.${today}`)
+      .or(`end_date.is.null,end_date.gte.${today}`)
+      .order("start_date")
       .order("created_at"),
     supabase
       .from("amali_logs")
@@ -155,7 +151,6 @@ export default async function DashboardPage() {
       photoUrl={profile.photo_url}
       tracker={tracker.data ?? []}
       tasks={tasks.data ?? []}
-      reportedToday={!!report.data}
       notices={notices.data ?? []}
       amaliItems={amaliItems.data ?? []}
       amaliDoneIds={(amaliLogs.data ?? [])

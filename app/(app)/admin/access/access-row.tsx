@@ -101,27 +101,39 @@ export function AccessRow({
             </div>
           </div>
 
-          <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Visible pages
-            </p>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {ALL_PAGES.map((page) => (
-                <label
-                  key={page.href}
-                  className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm shadow-sm"
-                >
-                  <input
-                    type="checkbox"
-                    checked={pages.has(page.href)}
-                    onChange={() => togglePage(page.href)}
-                  />
-                  <span>{page.icon}</span>
-                  {page.label}
-                </label>
-              ))}
+          {roles.has("super_admin") ? (
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Visible pages
+              </p>
+              <p className="rounded-lg bg-white px-3 py-2 text-sm text-slate-600 shadow-sm">
+                Super Admin automatically gets access to every page — including
+                any added in the future. No need to tick pages individually.
+              </p>
             </div>
-          </div>
+          ) : (
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Visible pages
+              </p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {ALL_PAGES.map((page) => (
+                  <label
+                    key={page.href}
+                    className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm shadow-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={pages.has(page.href)}
+                      onChange={() => togglePage(page.href)}
+                    />
+                    <span>{page.icon}</span>
+                    {page.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           {msg && (
             <p

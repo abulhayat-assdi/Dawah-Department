@@ -18,18 +18,14 @@ export default async function AppLayout({
   const profile = await requireProfile();
   const supabase = await createClient();
 
-  const { data: grants } = await supabase
-    .from("user_page_access")
-    .select("href")
-    .eq("profile_id", profile.id);
-
   let nav: NavItem[];
-  if (grants && grants.length > 0) {
-    const allowed = new Set(grants.map((g) => g.href as string));
-    nav = ALL_PAGES.filter((item) => allowed.has(item.href));
-  } else {
-    // No explicit grants yet — fall back to the union of nav for every
-    // role this profile holds (primary role + Access-Management extras).
+  if (allRoles(profile).includes("super_admin")) {
+    // Super Admin always has every page — current and future — with no
+    // per-page grants needed. Skip the grants lookup entirely so a newly
+    // added page shows up immediately without an Access Management edit.
+    // Union in the nav of any other role the profile also holds (e.g.
+    // Teacher/Member) so their role-specific pages — My Tasks, Submit
+    // Class/Task, My Resources, My Profile — stay in the sidebar too.
     const seen = new Map<string, NavItem>();
     for (const role of allRoles(profile)) {
       for (const item of NAV_BY_ROLE[role] ?? []) {
@@ -37,6 +33,26 @@ export default async function AppLayout({
       }
     }
     nav = Array.from(seen.values());
+  } else {
+    const { data: grants } = await supabase
+      .from("user_page_access")
+      .select("href")
+      .eq("profile_id", profile.id);
+
+    if (grants && grants.length > 0) {
+      const allowed = new Set(grants.map((g) => g.href as string));
+      nav = ALL_PAGES.filter((item) => allowed.has(item.href));
+    } else {
+      // No explicit grants yet — fall back to the union of nav for every
+      // role this profile holds (primary role + Access-Management extras).
+      const seen = new Map<string, NavItem>();
+      for (const role of allRoles(profile)) {
+        for (const item of NAV_BY_ROLE[role] ?? []) {
+          seen.set(item.href, item);
+        }
+      }
+      nav = Array.from(seen.values());
+    }
   }
 
   return (

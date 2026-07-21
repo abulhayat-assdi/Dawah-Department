@@ -126,9 +126,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/tasks", label: "Task Management", icon: "✅" },
   { href: "/admin/task-report", label: "Task Report", icon: "📈" },
   { href: "/admin/amali", label: "Amali Checklist", icon: "📿" },
-  { href: "/admin/staff-tracker", label: "Staff Quran & Dawah Tracker", icon: "📖" },
   { href: "/admin/reports", label: "Reports", icon: "📝" },
-  { href: "/admin/resources", label: "Resource Center", icon: "📁" },
   { href: "/admin/teacher-resources", label: "Teacher Resources", icon: "🗄️" },
   { href: "/admin/content", label: "Public Pages", icon: "🌐" },
   { href: "/admin/faculty", label: "Faculty (Public)", icon: "🧑‍🏫" },
@@ -148,20 +146,18 @@ export const COORDINATOR_NAV: NavItem[] = [
   { href: "/admin/tasks", label: "Task Management", icon: "✅" },
   { href: "/admin/task-report", label: "Task Report", icon: "📈" },
   { href: "/admin/amali", label: "Amali Checklist", icon: "📿" },
-  { href: "/admin/staff-tracker", label: "Staff Quran & Dawah Tracker", icon: "📖" },
   { href: "/admin/reports", label: "Reports", icon: "📝" },
   { href: "/admin/teacher-resources", label: "Teacher Resources", icon: "🗄️" },
+  { href: "/admin/feedback", label: "Feedback & Complaints", icon: "📨" },
 ];
 
 export const TEACHER_NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: "🏠" },
-  { href: "/my/batches", label: "My Batches", icon: "🗂️" },
   { href: "/routine", label: "Campus Routine", icon: "🗓️" },
   { href: "/my/tasks", label: "My Tasks", icon: "✅" },
   { href: "/my/submissions", label: "Submit Class / Task", icon: "📤" },
-  { href: "/my/staff-tracker", label: "My Quran & Dawah", icon: "📖" },
-  { href: "/my/report", label: "Daily Report", icon: "📝" },
   { href: "/my/resources", label: "My Resources", icon: "📁" },
+  { href: "/admin/feedback", label: "Feedback & Complaints", icon: "📨" },
   { href: "/my/profile", label: "My Profile", icon: "👤" },
 ];
 

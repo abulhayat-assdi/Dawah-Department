@@ -15,7 +15,7 @@ export async function createBatch(formData: FormData) {
   await requireCoordinatorOrAdmin();
   const supabase = await createClient();
   const total = Number(formData.get("total_classes") ?? 0);
-  await supabase.from("batches").insert({
+  const { error } = await supabase.from("batches").insert({
     course_id: String(formData.get("course_id")),
     campus_id: String(formData.get("campus_id") ?? "") || null,
     batch_no: formatBatchNo(String(formData.get("batch_no") ?? "")),
@@ -28,6 +28,9 @@ export async function createBatch(formData: FormData) {
     active_student_count: Number(formData.get("active_student_count") ?? 0),
     status: String(formData.get("status") ?? "will_start"),
   });
+  // Fail loud: without this, a rejected insert (e.g. a missing column or an RLS
+  // denial) leaves the form silently doing nothing instead of reporting why.
+  if (error) throw new Error(`ব্যাচ যোগ করা যায়নি: ${error.message}`);
   revalidatePath("/admin/batches");
   revalidatePath("/admin/tracker");
 }

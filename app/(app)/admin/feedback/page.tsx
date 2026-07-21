@@ -1,8 +1,8 @@
-import { requireCoordinatorOrAdmin } from "@/lib/auth";
+import { requireProfile, allRoles } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardHeader, PageHeader, EmptyState, Button, Select, Input } from "@/components/ui";
 import { DeleteButton } from "@/components/delete-button";
-import { formatDate } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 import { markFeedbackRead, deleteFeedback } from "./actions";
 
 interface FeedbackRow {
@@ -19,7 +19,13 @@ export default async function FeedbackPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  await requireCoordinatorOrAdmin();
+  // Open to every logged-in teacher, coordinator and admin so the whole team
+  // can monitor community inquiries — only Super Admin/Coordinator can mark
+  // messages read or delete them (see the role check below and 11_feedback_open_read.sql).
+  const profile = await requireProfile();
+  const roles = allRoles(profile);
+  const canModerate = roles.includes("super_admin") || roles.includes("coordinator");
+
   const sp = await searchParams;
   const q = typeof sp.q === "string" ? sp.q.trim() : "";
   const status = typeof sp.status === "string" ? sp.status : "";
@@ -66,28 +72,29 @@ export default async function FeedbackPage({
         {items.length === 0 ? (
           <EmptyState icon="📨" title="No messages" />
         ) : (
-          <ul className="divide-y divide-slate-50">
+          <div className="grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-3">
             {items.map((f) => (
-              <li key={f.id} className="px-5 py-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-semibold text-slate-900">
-                      {f.name || "A well-wisher"}
-                      {f.phone && (
-                        <span className="ml-2 text-sm font-normal text-slate-400">
-                          {f.phone}
-                        </span>
-                      )}
-                      {!f.is_read && (
-                        <span className="ml-2 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-bold text-brand-700">
-                          NEW
-                        </span>
-                      )}
-                    </p>
-                    <p className="mt-1 text-sm text-slate-600">{f.message}</p>
-                    <p className="mt-1 text-xs text-slate-400">{formatDate(f.created_at)}</p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
+              <div
+                key={f.id}
+                className="flex flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-semibold text-slate-900">{f.name || "A well-wisher"}</p>
+                  {!f.is_read && (
+                    <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-bold text-brand-700">
+                      NEW
+                    </span>
+                  )}
+                </div>
+                {f.phone && (
+                  <p className="mt-0.5 text-sm text-slate-500">📞 {f.phone}</p>
+                )}
+                <p className="mt-1 text-xs text-slate-400">🕒 {formatDateTime(f.created_at)}</p>
+                <p className="mt-3 flex-1 whitespace-pre-wrap break-words text-sm text-slate-700">
+                  {f.message}
+                </p>
+                {canModerate && (
+                  <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3">
                     <form action={markFeedbackRead}>
                       <input type="hidden" name="id" value={f.id} />
                       <input type="hidden" name="is_read" value={String(!f.is_read)} />
@@ -102,10 +109,10 @@ export default async function FeedbackPage({
                       className="text-xs text-red-600"
                     />
                   </div>
-                </div>
-              </li>
+                )}
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </Card>
     </div>

@@ -14,7 +14,6 @@ import { createNotification } from "@/lib/notify";
 
 function revalidate(batchId: string) {
   revalidatePath(`/admin/batches/${batchId}`);
-  revalidatePath(`/my/batches/${batchId}`);
   revalidatePath("/dashboard");
 }
 
@@ -22,7 +21,7 @@ export async function updateBatchFields(formData: FormData) {
   await requireProfile();
   const supabase = await createClient();
   const id = String(formData.get("id"));
-  await supabase
+  const { error } = await supabase
     .from("batches")
     .update({
       batch_no: String(formData.get("batch_no") ?? "").trim(),
@@ -38,6 +37,9 @@ export async function updateBatchFields(formData: FormData) {
       note: String(formData.get("note") ?? "").trim() || null,
     })
     .eq("id", id);
+  // Fail loud so a rejected update (missing column / RLS denial) is visible
+  // instead of silently discarding the edit.
+  if (error) throw new Error(`ব্যাচ আপডেট করা যায়নি: ${error.message}`);
   revalidate(id);
 }
 

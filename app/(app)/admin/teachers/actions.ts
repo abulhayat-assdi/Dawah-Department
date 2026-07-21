@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -36,6 +35,8 @@ export async function createTeacher(formData: FormData) {
       designation: String(formData.get("designation") ?? "").trim() || null,
       phone: String(formData.get("phone") ?? "").trim() || null,
       location: String(formData.get("location") ?? "").trim() || null,
+      bio: String(formData.get("bio") ?? "").trim() || null,
+      photo_url: String(formData.get("photo_url") ?? "").trim() || null,
     })
     .eq("id", data.user.id);
 
@@ -59,13 +60,35 @@ export async function toggleTeacherActive(formData: FormData) {
   revalidatePath("/admin/teachers");
 }
 
-/** Edit an existing member's full profile, role and campus assignments. */
+/**
+ * Edit an existing member's full profile, role, campus assignments and,
+ * optionally, their login email/password. The password field is left blank
+ * by default in the UI — only a non-empty value triggers a reset.
+ */
 export async function updateTeacher(
   formData: FormData,
 ): Promise<{ ok?: boolean; error?: string }> {
   await requireAdmin();
   const admin = createAdminClient();
   const id = String(formData.get("id"));
+
+  const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+
+  if (password && password.length < 6) {
+    return { error: "Password must be at least 6 characters." };
+  }
+
+  if (email || password) {
+    const authUpdate: { email?: string; password?: string; email_confirm?: boolean } = {};
+    if (email) {
+      authUpdate.email = email;
+      authUpdate.email_confirm = true;
+    }
+    if (password) authUpdate.password = password;
+    const { error: authError } = await admin.auth.admin.updateUserById(id, authUpdate);
+    if (authError) return { error: authError.message };
+  }
 
   const { error } = await admin
     .from("profiles")
@@ -92,31 +115,18 @@ export async function updateTeacher(
   }
 
   revalidatePath("/admin/teachers");
-  revalidatePath(`/admin/teachers/${id}`);
   return { ok: true };
 }
 
-export async function resetTeacherPassword(
+export async function deleteTeacher(
   formData: FormData,
 ): Promise<{ ok?: boolean; error?: string }> {
   await requireAdmin();
   const admin = createAdminClient();
   const id = String(formData.get("id"));
-  const password = String(formData.get("password") ?? "");
-  if (password.length < 6) {
-    return { error: "Password must be at least 6 characters." };
-  }
-  const { error } = await admin.auth.admin.updateUserById(id, { password });
-  if (error) return { error: error.message };
-  return { ok: true };
-}
-
-export async function deleteTeacher(formData: FormData) {
-  await requireAdmin();
-  const admin = createAdminClient();
-  const id = String(formData.get("id"));
   // Deletes the auth user; the profile row cascades via its FK.
-  await admin.auth.admin.deleteUser(id);
+  const { error } = await admin.auth.admin.deleteUser(id);
+  if (error) return { error: error.message };
   revalidatePath("/admin/teachers");
-  redirect("/admin/teachers");
+  return { ok: true };
 }

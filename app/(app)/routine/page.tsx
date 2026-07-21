@@ -1,14 +1,9 @@
 import { requireProfile, allRoles } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardHeader, PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 import type { CampusRoutine, Course, CourseTrackerRow } from "@/lib/types";
-import { RoutineBuilder } from "./routine-builder";
-import {
-  RoutineViewer,
-  type CampusOpt,
-  type CourseOpt,
-  type RoutineBatch,
-} from "./routine-viewer";
+import { RoutinePageClient } from "./routine-page-client";
+import type { CampusOpt, CourseOpt, RoutineBatch } from "./routine-viewer";
 
 export default async function RoutinePage() {
   const profile = await requireProfile();
@@ -87,26 +82,14 @@ export default async function RoutinePage() {
         subtitle="Weekly Quran & Dawah class schedule across every campus and batch."
       />
 
-      {canEdit && (
-        <Card>
-          <CardHeader
-            title="Schedule Builder"
-            subtitle="Select a campus and batch, then set the weekly Quran & Dawah class timings. Saving an existing batch updates its routine."
-          />
-          <RoutineBuilder
-            campuses={builderCampuses}
-            batches={builderBatches}
-            routines={routines}
-          />
-        </Card>
-      )}
-
-      <RoutineViewer
+      <RoutinePageClient
         campuses={campuses}
         courses={courses}
         batches={batches}
         routines={routines}
         canEdit={canEdit}
+        builderCampuses={builderCampuses}
+        builderBatches={builderBatches}
       />
     </div>
   );

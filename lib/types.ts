@@ -253,9 +253,11 @@ export interface Notification {
 export interface AmaliItem {
   id: string;
   title: string;
-  sequence: number;
   is_active: boolean;
   campus_id: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  created_at: string;
 }
 
 export interface Message {

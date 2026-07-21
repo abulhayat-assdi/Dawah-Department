@@ -43,13 +43,18 @@ export async function updateUserAccess(
     if (error) return { error: error.message };
   }
 
-  const pages = formData.getAll("pages").map(String);
   await supabase.from("user_page_access").delete().eq("profile_id", profileId);
-  if (pages.length) {
-    const { error } = await supabase
-      .from("user_page_access")
-      .insert(pages.map((href) => ({ profile_id: profileId, href })));
-    if (error) return { error: error.message };
+  // Super Admin always has every page (current and future) automatically —
+  // never store a restrictive per-page grant list for them, even if the
+  // checkboxes were left checked in the UI.
+  if (!checkedRoles.includes("super_admin")) {
+    const pages = formData.getAll("pages").map(String);
+    if (pages.length) {
+      const { error } = await supabase
+        .from("user_page_access")
+        .insert(pages.map((href) => ({ profile_id: profileId, href })));
+      if (error) return { error: error.message };
+    }
   }
 
   revalidatePath("/admin/access");

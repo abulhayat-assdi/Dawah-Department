@@ -14,7 +14,7 @@ const LINKS = [
   { href: "/faculty", label: "Faculty" },
   { href: "/academic", label: "Academic" },
   { href: "/activities", label: "Dawah Activities" },
-  { href: "/contact", label: "Contact" },
+  { href: "/contact", label: "Contact & Feedback" },
 ];
 
 export function PublicNav({ site }: { site: Site }) {

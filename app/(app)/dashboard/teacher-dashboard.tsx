@@ -20,7 +20,6 @@ export function TeacherDashboard({
   photoUrl,
   tracker,
   tasks,
-  reportedToday,
   notices,
   amaliItems,
   amaliDoneIds,
@@ -29,7 +28,6 @@ export function TeacherDashboard({
   photoUrl?: string | null;
   tracker: CourseTrackerRow[];
   tasks: Task[];
-  reportedToday: boolean;
   notices: Notice[];
   amaliItems: AmaliItem[];
   amaliDoneIds: string[];
@@ -49,18 +47,7 @@ export function TeacherDashboard({
         subtitle="The batches and activities under your responsibility."
       />
 
-      {!reportedToday && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-yellow-200 bg-yellow-50 px-5 py-4">
-          <p className="text-sm font-medium text-yellow-800">
-            ⚠️ Today&apos;s daily report has not been submitted yet.
-          </p>
-          <Link href="/my/report">
-            <Button variant="primary">Submit report</Button>
-          </Link>
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard label="My Batches" value={toBn(tracker.length)} icon="🗂️" accent="brand" />
         <StatCard
           label="Ongoing Batches"
@@ -69,12 +56,6 @@ export function TeacherDashboard({
           accent="yellow"
         />
         <StatCard label="Pending Tasks" value={toBn(tasks.length)} icon="✅" accent="blue" />
-        <StatCard
-          label="Today's Report"
-          value={reportedToday ? "✓" : "—"}
-          icon="📝"
-          accent={reportedToday ? "green" : "red"}
-        />
       </div>
 
       <NoticeBoard notices={notices} isAdmin={false} />
@@ -136,9 +117,9 @@ export function TeacherDashboard({
       <Card>
         <CardHeader
           title="My Batch Progress"
-          subtitle="Click a course to update classes and syllabus"
+          subtitle="Overview of assigned courses and batches"
         />
-        <TrackerTable rows={tracker} hrefBase="/my/batches" />
+        <TrackerTable rows={tracker} />
       </Card>
 
       <Card>

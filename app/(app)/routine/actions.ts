@@ -4,17 +4,22 @@ import { revalidatePath } from "next/cache";
 import { requireCoordinatorOrAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
+export type RoutineFormState = { ok: boolean } | null;
+
 /**
  * Creates or updates the weekly routine for a batch (one record per batch,
  * upserted on batch_id). Restricted to Super Admins / Campus Coordinators;
  * RLS additionally scopes coordinators to their own campus.
  */
-export async function saveRoutine(formData: FormData) {
+export async function saveRoutine(
+  _prevState: RoutineFormState,
+  formData: FormData,
+): Promise<RoutineFormState> {
   const profile = await requireCoordinatorOrAdmin();
   const supabase = await createClient();
 
   const batchId = String(formData.get("batch_id") ?? "");
-  if (!batchId) return;
+  if (!batchId) return { ok: false };
 
   const time = (key: string) => {
     const v = String(formData.get(key) ?? "").trim();
@@ -44,6 +49,7 @@ export async function saveRoutine(formData: FormData) {
   );
 
   revalidatePath("/routine");
+  return { ok: true };
 }
 
 export async function deleteRoutine(formData: FormData) {
