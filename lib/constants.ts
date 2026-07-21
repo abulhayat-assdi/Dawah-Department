@@ -1,6 +1,8 @@
 import type {
   BatchStatus,
   ExamStatus,
+  RoutineClassType,
+  TaskClassType,
   TaskStatus,
   UserRole,
 } from "./types";
@@ -39,6 +41,61 @@ export const PRIORITY_LABEL: Record<number, string> = {
   1: "Important",
 };
 
+export const TASK_CLASS_TYPE: Record<
+  TaskClassType,
+  {
+    label: string;
+    text: string;
+    bg: string;
+    /** Shows the Course dropdown when true (Form Verification). */
+    needsCourse: boolean;
+    /** Shows the Batch dropdown when true. */
+    needsBatch: boolean;
+    /** true = monthly quota (month + count); false = a plain dated task. */
+    monthly: boolean;
+    /** Label for the target-count input; only used when `monthly`. */
+    countLabel: string;
+  }
+> = {
+  quran: { label: "Quran Class", text: "text-brand-700", bg: "bg-brand-50", needsCourse: false, needsBatch: true, monthly: true, countLabel: "Classes to be taken this month" },
+  dawah: { label: "Dawah Class", text: "text-blue-700", bg: "bg-blue-50", needsCourse: false, needsBatch: true, monthly: true, countLabel: "Classes to be taken this month" },
+  staff: { label: "Staff Class", text: "text-purple-700", bg: "bg-purple-50", needsCourse: false, needsBatch: false, monthly: true, countLabel: "Classes to be taken this month" },
+  other: { label: "Other Task", text: "text-slate-700", bg: "bg-slate-100", needsCourse: false, needsBatch: false, monthly: false, countLabel: "" },
+  form_verification: { label: "Form Verification", text: "text-emerald-700", bg: "bg-emerald-50", needsCourse: true, needsBatch: true, monthly: true, countLabel: "Number of Forms to Verify" },
+};
+
+// Weekly routine grid: Saturday → Thursday (Friday is the holiday, hidden).
+// `index` is what gets stored in campus_routines.quran_days / dawah_days.
+export const DAYS_OF_WEEK: { index: number; label: string; short: string }[] = [
+  { index: 0, label: "Saturday", short: "Sat" },
+  { index: 1, label: "Sunday", short: "Sun" },
+  { index: 2, label: "Monday", short: "Mon" },
+  { index: 3, label: "Tuesday", short: "Tue" },
+  { index: 4, label: "Wednesday", short: "Wed" },
+  { index: 5, label: "Thursday", short: "Thu" },
+];
+
+// Styling + labels for the two routine class types (Quran / Dawah).
+export const ROUTINE_CLASS_TYPE: Record<
+  RoutineClassType,
+  { label: string; text: string; bg: string; dot: string; ring: string }
+> = {
+  quran: {
+    label: "Quran Class",
+    text: "text-brand-700",
+    bg: "bg-brand-50",
+    dot: "bg-brand-500",
+    ring: "ring-brand-200",
+  },
+  dawah: {
+    label: "Dawah Class",
+    text: "text-blue-700",
+    bg: "bg-blue-50",
+    dot: "bg-blue-500",
+    ring: "ring-blue-200",
+  },
+};
+
 export const ROLE_LABEL: Record<UserRole, string> = {
   super_admin: "Super Admin",
   coordinator: "Campus Coordinator",
@@ -61,15 +118,18 @@ export interface NavItem {
 export const ADMIN_NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: "🏠" },
   { href: "/admin/tracker", label: "Course Progress Tracker", icon: "📊" },
-  { href: "/admin/campuses", label: "Campuses", icon: "🏛️" },
+  { href: "/admin/campuses", label: "Campuses & Courses", icon: "🏛️" },
   { href: "/admin/teachers", label: "Teachers / Members", icon: "👥" },
   { href: "/admin/courses", label: "Courses & Syllabus", icon: "📚" },
   { href: "/admin/batches", label: "Batch Management", icon: "🗂️" },
+  { href: "/routine", label: "Campus Routine", icon: "🗓️" },
   { href: "/admin/tasks", label: "Task Management", icon: "✅" },
+  { href: "/admin/task-report", label: "Task Report", icon: "📈" },
   { href: "/admin/amali", label: "Amali Checklist", icon: "📿" },
   { href: "/admin/staff-tracker", label: "Staff Quran & Dawah Tracker", icon: "📖" },
   { href: "/admin/reports", label: "Reports", icon: "📝" },
   { href: "/admin/resources", label: "Resource Center", icon: "📁" },
+  { href: "/admin/teacher-resources", label: "Teacher Resources", icon: "🗄️" },
   { href: "/admin/content", label: "Public Pages", icon: "🌐" },
   { href: "/admin/faculty", label: "Faculty (Public)", icon: "🧑‍🏫" },
   { href: "/admin/feedback", label: "Feedback & Complaints", icon: "📨" },
@@ -84,18 +144,24 @@ export const COORDINATOR_NAV: NavItem[] = [
   { href: "/admin/tracker", label: "Course Progress Tracker", icon: "📊" },
   { href: "/admin/teachers", label: "Teachers / Members", icon: "👥" },
   { href: "/admin/batches", label: "Batch Management", icon: "🗂️" },
+  { href: "/routine", label: "Campus Routine", icon: "🗓️" },
   { href: "/admin/tasks", label: "Task Management", icon: "✅" },
+  { href: "/admin/task-report", label: "Task Report", icon: "📈" },
   { href: "/admin/amali", label: "Amali Checklist", icon: "📿" },
   { href: "/admin/staff-tracker", label: "Staff Quran & Dawah Tracker", icon: "📖" },
   { href: "/admin/reports", label: "Reports", icon: "📝" },
+  { href: "/admin/teacher-resources", label: "Teacher Resources", icon: "🗄️" },
 ];
 
 export const TEACHER_NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: "🏠" },
   { href: "/my/batches", label: "My Batches", icon: "🗂️" },
+  { href: "/routine", label: "Campus Routine", icon: "🗓️" },
   { href: "/my/tasks", label: "My Tasks", icon: "✅" },
+  { href: "/my/submissions", label: "Submit Class / Task", icon: "📤" },
   { href: "/my/staff-tracker", label: "My Quran & Dawah", icon: "📖" },
   { href: "/my/report", label: "Daily Report", icon: "📝" },
+  { href: "/my/resources", label: "My Resources", icon: "📁" },
   { href: "/my/profile", label: "My Profile", icon: "👤" },
 ];
 

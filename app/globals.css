@@ -162,6 +162,57 @@ body {
   background-size: 64px 64px, cover;
 }
 
+/*
+  Campus Routine — Glassmorphism.
+  `.routine-stage` is the deep-emerald, lattice-textured canvas the frosted
+  cards float over (backdrop-blur needs a rich background to read against).
+  `.glass-card` is the frosted panel; `.glass-tile` the smaller session card.
+*/
+.routine-stage {
+  position: relative;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='1'%3E%3Cpath d='M32 3l9 20 20 9-20 9-9 20-9-20-20-9 20-9z'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(120% 130% at 15% 0%, #1c9357 0%, #0f7344 34%, #0a4f31 62%, #063620 100%);
+  background-size: 64px 64px, cover;
+}
+
+.glass-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.22),
+    rgba(255, 255, 255, 0.08)
+  );
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 10px 30px rgba(4, 36, 23, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.glass-tile {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0.72)
+  );
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 6px 18px rgba(4, 36, 23, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease;
+}
+.glass-tile:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 26px rgba(4, 36, 23, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
 /* Thin emerald-tinted scrollbars for data-dense panels */
 * {
   scrollbar-width: thin;

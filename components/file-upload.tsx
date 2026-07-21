@@ -12,20 +12,27 @@ import { Avatar } from "@/components/avatar";
  */
 export function FileUpload({
   name,
+  nameField,
   bucket,
   kind = "image",
   defaultUrl = "",
   label,
+  maxSizeMB,
   onChange,
 }: {
   name?: string;
+  /** When set, the original file name is written to a hidden input of this name. */
+  nameField?: string;
   bucket: string;
   kind?: "image" | "file";
   defaultUrl?: string | null;
   label?: string;
+  /** Client-side size cap in MB; rejects larger files before uploading. */
+  maxSizeMB?: number;
   onChange?: (url: string) => void;
 }) {
   const [url, setUrl] = useState<string>(defaultUrl ?? "");
+  const [fileName, setFileName] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -33,6 +40,10 @@ export function FileUpload({
   async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (maxSizeMB && file.size > maxSizeMB * 1024 * 1024) {
+      setError(`File is too large (max ${maxSizeMB} MB).`);
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -45,6 +56,7 @@ export function FileUpload({
       if (upErr) throw upErr;
       const { data } = supabase.storage.from(bucket).getPublicUrl(path);
       setUrl(data.publicUrl);
+      setFileName(file.name);
       onChange?.(data.publicUrl);
     } catch {
       setError("Upload failed. Try again.");
@@ -59,6 +71,7 @@ export function FileUpload({
         <p className="mb-1.5 block text-sm font-medium text-slate-700">{label}</p>
       )}
       {name && <input type="hidden" name={name} value={url} />}
+      {nameField && <input type="hidden" name={nameField} value={fileName} />}
       <div className="flex items-center gap-3">
         {kind === "image" ? (
           <Avatar photoUrl={url} size={56} />
@@ -70,7 +83,7 @@ export function FileUpload({
               rel="noreferrer"
               className="truncate text-sm font-medium text-brand-600 hover:underline"
             >
-              📎 Uploaded file
+              📎 {fileName || "Uploaded file"}
             </a>
           )
         )}

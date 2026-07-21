@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireAdmin } from "@/lib/auth";
+import { requirePageAccess } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
   Card,
@@ -15,7 +15,12 @@ import {
 import { TrackerTable } from "@/components/tracker-table";
 import { FileUpload } from "@/components/file-upload";
 import { DeleteButton } from "@/components/delete-button";
-import { updateCampus, deleteCampus, setCampusCourses } from "../actions";
+import {
+  updateCampus,
+  deleteCampus,
+  setCampusCourses,
+  createCourseForCampus,
+} from "../actions";
 import type { Campus, Course, CourseTrackerRow } from "@/lib/types";
 
 export default async function CampusGatewayPage({
@@ -23,7 +28,7 @@ export default async function CampusGatewayPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdmin();
+  await requirePageAccess("/admin/campuses");
   const { id } = await params;
   const supabase = await createClient();
 
@@ -111,34 +116,64 @@ export default async function CampusGatewayPage({
       <Card>
         <CardHeader
           title="Courses at this Campus"
-          subtitle="Select which courses currently run here — narrows the Course filter on the Tracker page"
+          subtitle="Create a course or select which courses currently run here — narrows the Course filter on the Tracker page"
         />
-        <form action={setCampusCourses} className="space-y-4 p-5">
-          <input type="hidden" name="campus_id" value={id} />
-          {courses.length === 0 ? (
-            <EmptyState
-              icon="📚"
-              title="No courses yet"
-              hint="Add courses first from Admin → Courses."
-            />
-          ) : (
-            <div className="flex flex-wrap gap-3 rounded-xl border border-slate-200 p-3">
-              {courses.map((course) => (
-                <label key={course.id} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    name="course_ids"
-                    value={course.id}
-                    defaultChecked={course.campus_id === id}
-                    className="size-4 rounded border-slate-300"
-                  />
-                  {course.abbreviation} — {course.name}
-                </label>
-              ))}
+        <div className="space-y-5 p-5">
+          {/* Add a brand-new course; it's saved to the master list and assigned
+              to this campus in one step, then appears (checked) in the grid below. */}
+          <form
+            action={createCourseForCampus}
+            className="grid gap-3 rounded-xl border border-slate-200 p-4 sm:grid-cols-[1fr_2fr_auto] sm:items-end"
+          >
+            <input type="hidden" name="campus_id" value={id} />
+            <div>
+              <Label htmlFor="new_course_code">Short Code (সংক্ষিপ্ত কোড)</Label>
+              <Input
+                id="new_course_code"
+                name="abbreviation"
+                required
+                placeholder="AOC"
+              />
             </div>
-          )}
-          <Button type="submit">Save course assignment</Button>
-        </form>
+            <div>
+              <Label htmlFor="new_course_name">Course Full Name (কোর্সের নাম)</Label>
+              <Input
+                id="new_course_name"
+                name="name"
+                required
+                placeholder="The Art of Creation"
+              />
+            </div>
+            <Button type="submit">Add Course</Button>
+          </form>
+
+          <form action={setCampusCourses} className="space-y-4">
+            <input type="hidden" name="campus_id" value={id} />
+            {courses.length === 0 ? (
+              <EmptyState
+                icon="📚"
+                title="No courses yet"
+                hint="Use the Add Course form above to create the first one."
+              />
+            ) : (
+              <div className="flex flex-wrap gap-3 rounded-xl border border-slate-200 p-3">
+                {courses.map((course) => (
+                  <label key={course.id} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      name="course_ids"
+                      value={course.id}
+                      defaultChecked={course.campus_id === id}
+                      className="size-4 rounded border-slate-300"
+                    />
+                    {course.abbreviation} — {course.name}
+                  </label>
+                ))}
+              </div>
+            )}
+            <Button type="submit">Save course assignment</Button>
+          </form>
+        </div>
       </Card>
 
       <Card>

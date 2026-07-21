@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth";
+import { requirePageAccess } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
   Card,
@@ -16,7 +16,7 @@ import { createCampus, deleteCampus } from "./actions";
 import type { Campus } from "@/lib/types";
 
 export default async function CampusesPage() {
-  await requireAdmin();
+  await requirePageAccess("/admin/campuses");
   const supabase = await createClient();
   const { data } = await supabase.from("campuses").select("*").order("name");
   const campuses = (data ?? []) as Campus[];
@@ -24,8 +24,8 @@ export default async function CampusesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Campus Management"
-        subtitle="Add and manage the campuses of the Dawah Department."
+        title="Campuses & Courses"
+        subtitle="Add and manage the campuses and courses of the Dawah Department."
       />
 
       <div className="grid gap-6 lg:grid-cols-3">

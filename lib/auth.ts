@@ -39,6 +39,27 @@ export async function requireAdmin(): Promise<Profile> {
   return profile;
 }
 
+/**
+ * Requires either the super_admin role (primary or granted) OR an explicit
+ * per-user page grant for `href` (set from the Access Management page).
+ * Redirects to /dashboard otherwise. Use for pages that are Super-Admin-only
+ * by default but that the Super Admin can hand to an individual member,
+ * page by page.
+ */
+export async function requirePageAccess(href: string): Promise<Profile> {
+  const profile = await requireProfile();
+  if (allRoles(profile).includes("super_admin")) return profile;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("user_page_access")
+    .select("href")
+    .eq("profile_id", profile.id)
+    .eq("href", href)
+    .maybeSingle();
+  if (!data) redirect("/dashboard");
+  return profile;
+}
+
 /** Requires super_admin or coordinator (primary or granted); redirects otherwise. */
 export async function requireCoordinatorOrAdmin(): Promise<Profile> {
   const profile = await requireProfile();

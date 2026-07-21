@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireAdmin } from "@/lib/auth";
+import { requirePageAccess } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+
+const CAMPUS_PAGE = "/admin/campuses";
 
 function readCampus(formData: FormData) {
   return {
@@ -16,7 +18,7 @@ function readCampus(formData: FormData) {
 }
 
 export async function createCampus(formData: FormData) {
-  await requireAdmin();
+  await requirePageAccess(CAMPUS_PAGE);
   const supabase = await createClient();
   await supabase.from("campuses").insert(readCampus(formData));
   revalidatePath("/admin/campuses");
@@ -24,7 +26,7 @@ export async function createCampus(formData: FormData) {
 }
 
 export async function updateCampus(formData: FormData) {
-  await requireAdmin();
+  await requirePageAccess(CAMPUS_PAGE);
   const supabase = await createClient();
   await supabase
     .from("campuses")
@@ -36,7 +38,7 @@ export async function updateCampus(formData: FormData) {
 }
 
 export async function deleteCampus(formData: FormData) {
-  await requireAdmin();
+  await requirePageAccess(CAMPUS_PAGE);
   const supabase = await createClient();
   await supabase.from("campuses").delete().eq("id", String(formData.get("id")));
   revalidatePath("/admin/campuses");
@@ -46,7 +48,7 @@ export async function deleteCampus(formData: FormData) {
 
 /** Replaces the set of courses running at this campus (courses.campus_id). */
 export async function setCampusCourses(formData: FormData) {
-  await requireAdmin();
+  await requirePageAccess(CAMPUS_PAGE);
   const supabase = await createClient();
   const campusId = String(formData.get("campus_id"));
   const courseIds = formData.getAll("course_ids").map(String).filter(Boolean);
@@ -58,6 +60,33 @@ export async function setCampusCourses(formData: FormData) {
 
   revalidatePath("/admin/campuses");
   revalidatePath(`/admin/campuses/${campusId}`);
+  revalidatePath("/admin/courses");
+  revalidatePath("/admin/tracker");
+}
+
+/**
+ * Creates a brand-new master course and, in the same step, assigns it to this
+ * campus (courses.campus_id). Called from the "Add Course" form on the campus
+ * detail page — the new course then shows up (checked) in the assignment grid.
+ */
+export async function createCourseForCampus(formData: FormData) {
+  await requirePageAccess(CAMPUS_PAGE);
+  const supabase = await createClient();
+  const campusId = String(formData.get("campus_id"));
+  const abbreviation = String(formData.get("abbreviation") ?? "").trim();
+  const name = String(formData.get("name") ?? "").trim();
+  if (!campusId || !abbreviation || !name) return;
+
+  await supabase.from("courses").insert({
+    abbreviation,
+    name,
+    campus_id: campusId,
+    category: "common",
+    default_total_classes: 0,
+  });
+
+  revalidatePath(`/admin/campuses/${campusId}`);
+  revalidatePath("/admin/campuses");
   revalidatePath("/admin/courses");
   revalidatePath("/admin/tracker");
 }

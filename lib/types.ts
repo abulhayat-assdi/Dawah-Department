@@ -6,6 +6,12 @@ export type BatchStatus = "will_start" | "ongoing" | "completed";
 export type ExamStatus = "done" | "pending" | "none";
 export type TopicStatus = "pending" | "done";
 export type TaskStatus = "todo" | "doing" | "done";
+export type TaskClassType =
+  | "quran"
+  | "dawah"
+  | "staff"
+  | "other"
+  | "form_verification";
 export type AssessmentType = "entry" | "peer" | "exit";
 export type ResourceType = "slide" | "pdf" | "book" | "link" | "video";
 
@@ -146,6 +152,82 @@ export interface Task {
   status: TaskStatus;
   priority: number;
   due_date: string | null;
+  /** Category of the allocation; null for legacy/plain tasks. */
+  class_type: TaskClassType | null;
+  /** Target course for a Form-Verification allocation; null otherwise. */
+  course_id: string | null;
+  /** Target batch for a Quran/Dawah/Form-Verification allocation; null otherwise. */
+  batch_id: string | null;
+  /** Monthly class/task/form quota assigned to the member. */
+  target_count: number;
+  /** Month a monthly quota applies to, as "YYYY-MM"; null for "other" tasks. */
+  target_month: string | null;
+}
+
+/** A teacher-submitted class update or completed task (see task_submissions). */
+export interface TaskSubmission {
+  id: string;
+  /** Allocation this fulfils; null for an ad-hoc/additional class. */
+  task_id: string | null;
+  teacher_id: string;
+  class_type: TaskClassType;
+  campus_id: string | null;
+  course_id: string | null;
+  batch_id: string | null;
+  /** Class date / completion date. */
+  submission_date: string;
+  /** Denormalised "YYYY-MM" of submission_date, for monthly aggregation. */
+  target_month: string | null;
+  topic: string | null;
+  comments: string | null;
+  /** True when submitted for a batch outside the teacher's allocation. */
+  is_additional: boolean;
+  /** Form Verification: number of forms verified in this submission. */
+  verified_count: number;
+  file_url: string | null;
+  file_name: string | null;
+  created_at: string;
+}
+
+/** The class type of a routine session in the weekly grid. */
+export type RoutineClassType = "quran" | "dawah";
+
+/**
+ * One weekly routine record per batch (see campus_routines). Holds the Quran
+ * and Dawah class timings and the weekdays each runs on (0 = Saturday … 5 =
+ * Thursday). `*_start`/`*_end` are "HH:MM:SS" time strings from Postgres.
+ */
+export interface CampusRoutine {
+  id: string;
+  batch_id: string;
+  campus_id: string | null;
+  quran_start: string | null;
+  quran_end: string | null;
+  quran_days: number[];
+  dawah_start: string | null;
+  dawah_end: string | null;
+  dawah_days: number[];
+  note: string | null;
+  updated_at: string;
+}
+
+/** A teacher's private uploaded document/asset (see teacher_resources). */
+export interface TeacherResource {
+  id: string;
+  teacher_id: string;
+  campus_id: string | null;
+  name: string;
+  comments: string | null;
+  /** Public URL of the stored file. */
+  file_url: string;
+  /** Storage object key within the `teacher-resources` bucket (for overwrite/delete). */
+  file_path: string;
+  file_name: string | null;
+  /** Size in bytes. */
+  file_size: number | null;
+  file_type: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface DailyReport {
