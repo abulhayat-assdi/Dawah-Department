@@ -20,6 +20,7 @@ import {
   setAssessment,
 } from "@/app/(app)/_actions/batch";
 import { deleteBatch } from "@/app/(app)/admin/batches/actions";
+import { addTopic, deleteTopic } from "@/app/(app)/admin/courses/actions";
 import { DeleteButton } from "@/components/delete-button";
 import { DailySchedule } from "@/components/daily-schedule";
 import type { Batch, ClassScheduleEntry } from "@/lib/types";
@@ -52,6 +53,7 @@ const ASSESSMENT_LABELS: Record<string, string> = {
 
 export function BatchDetail({
   batch,
+  courseId,
   courseName,
   abbreviation,
   topics,
@@ -63,6 +65,7 @@ export function BatchDetail({
   canDelete = false,
 }: {
   batch: Batch;
+  courseId: string;
   courseName: string;
   abbreviation: string;
   topics: Topic[];
@@ -436,6 +439,72 @@ export function BatchDetail({
           </ul>
         )}
       </Card>
+
+      {canDelete && (
+        <Card>
+          <CardHeader
+            title="Manage Syllabus / Curriculum"
+            subtitle={`Topics here belong to ${abbreviation} and are shared by every batch of this course.`}
+          />
+          <div className="grid gap-6 p-5 md:grid-cols-3">
+            <div className="md:col-span-2">
+              {topics.length === 0 ? (
+                <EmptyState icon="📖" title="No topics added yet" />
+              ) : (
+                <ol className="divide-y divide-slate-50">
+                  {topics.map((t) => (
+                    <li
+                      key={t.id}
+                      className="flex items-center justify-between gap-3 py-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-brand-50 text-xs font-bold text-brand-700">
+                          {toBn(t.sequence)}
+                        </span>
+                        <p className="text-sm font-medium text-slate-800">
+                          {t.title}
+                        </p>
+                      </div>
+                      <form action={deleteTopic}>
+                        <input type="hidden" name="id" value={t.id} />
+                        <input type="hidden" name="course_id" value={courseId} />
+                        <input type="hidden" name="batch_id" value={batch.id} />
+                        <Button variant="ghost" className="text-xs text-red-600">
+                          Delete
+                        </Button>
+                      </form>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
+            <form action={addTopic} className="space-y-3">
+              <input type="hidden" name="course_id" value={courseId} />
+              <input type="hidden" name="batch_id" value={batch.id} />
+              <div>
+                <Label htmlFor="topic_sequence">Sequence No.</Label>
+                <Input
+                  id="topic_sequence"
+                  name="sequence"
+                  type="number"
+                  defaultValue={topics.length + 1}
+                />
+              </div>
+              <div>
+                <Label htmlFor="topic_title">Topic Title</Label>
+                <Input id="topic_title" name="title" required />
+              </div>
+              <div>
+                <Label htmlFor="topic_description">Description</Label>
+                <Textarea id="topic_description" name="description" />
+              </div>
+              <Button type="submit" className="w-full">
+                Add Topic
+              </Button>
+            </form>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

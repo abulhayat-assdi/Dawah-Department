@@ -30,7 +30,7 @@ export default async function CoursesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Courses & Syllabus"
-        subtitle="Manage the master course list and each course's curriculum."
+        subtitle="Manage the master course list and its syllabus documents."
       />
 
       <div className="grid gap-6 lg:grid-cols-3">

@@ -1,5 +1,14 @@
-import { requireProfile } from "@/lib/auth";
+import { requireProfile, allRoles } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app-shell";
+import { ADMIN_NAV, COORDINATOR_NAV, TEACHER_NAV, ALL_PAGES } from "@/lib/constants";
+import type { NavItem } from "@/lib/constants";
+
+const NAV_BY_ROLE: Record<string, NavItem[]> = {
+  super_admin: ADMIN_NAV,
+  coordinator: COORDINATOR_NAV,
+  teacher: TEACHER_NAV,
+};
 
 export default async function AppLayout({
   children,
@@ -7,5 +16,32 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const profile = await requireProfile();
-  return <AppShell profile={profile}>{children}</AppShell>;
+  const supabase = await createClient();
+
+  const { data: grants } = await supabase
+    .from("user_page_access")
+    .select("href")
+    .eq("profile_id", profile.id);
+
+  let nav: NavItem[];
+  if (grants && grants.length > 0) {
+    const allowed = new Set(grants.map((g) => g.href as string));
+    nav = ALL_PAGES.filter((item) => allowed.has(item.href));
+  } else {
+    // No explicit grants yet — fall back to the union of nav for every
+    // role this profile holds (primary role + Access-Management extras).
+    const seen = new Map<string, NavItem>();
+    for (const role of allRoles(profile)) {
+      for (const item of NAV_BY_ROLE[role] ?? []) {
+        seen.set(item.href, item);
+      }
+    }
+    nav = Array.from(seen.values());
+  }
+
+  return (
+    <AppShell profile={profile} nav={nav}>
+      {children}
+    </AppShell>
+  );
 }

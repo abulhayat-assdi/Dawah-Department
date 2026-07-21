@@ -61,7 +61,11 @@ export default async function DashboardPage() {
     const campusCount = new Set(campusIds).size;
 
     const { data: batchRows } = campusIds.length
-      ? await supabase.from("batches").select("id, course_id").in("campus_id", campusIds)
+      ? await supabase
+          .from("batches")
+          .select("id, course_id")
+          .in("campus_id", campusIds)
+          .is("deleted_at", null)
       : { data: [] as { id: string; course_id: string }[] };
     const batchIds = (batchRows ?? []).map((b) => b.id as string);
     const courseCount = new Set((batchRows ?? []).map((b) => b.course_id)).size;
@@ -115,7 +119,7 @@ export default async function DashboardPage() {
   const batchIds = (assignments ?? []).map((a) => a.batch_id);
   const today = new Date().toISOString().slice(0, 10);
 
-  const [tracker, tasks, report, notices] = await Promise.all([
+  const [tracker, tasks, report, notices, amaliItems, amaliLogs] = await Promise.all([
     batchIds.length
       ? supabase.from("course_tracker").select("*").in("batch_id", batchIds)
       : Promise.resolve({ data: [] }),
@@ -132,6 +136,17 @@ export default async function DashboardPage() {
       .eq("report_date", today)
       .maybeSingle(),
     noticesQuery,
+    supabase
+      .from("amali_items")
+      .select("*")
+      .eq("is_active", true)
+      .order("sequence")
+      .order("created_at"),
+    supabase
+      .from("amali_logs")
+      .select("item_id, done")
+      .eq("teacher_id", profile.id)
+      .eq("log_date", today),
   ]);
 
   return (
@@ -142,6 +157,10 @@ export default async function DashboardPage() {
       tasks={tasks.data ?? []}
       reportedToday={!!report.data}
       notices={notices.data ?? []}
+      amaliItems={amaliItems.data ?? []}
+      amaliDoneIds={(amaliLogs.data ?? [])
+        .filter((l) => l.done)
+        .map((l) => l.item_id as string)}
     />
   );
 }

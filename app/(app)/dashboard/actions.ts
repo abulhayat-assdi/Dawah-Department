@@ -19,6 +19,5 @@ export async function toggleAmaliLog(formData: FormData) {
     },
     { onConflict: "teacher_id,item_id,log_date" },
   );
-  revalidatePath("/my/amali");
   revalidatePath("/dashboard");
 }

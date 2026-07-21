@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireCoordinatorOrAdmin } from "@/lib/auth";
+import { requireCoordinatorOrAdmin, requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 /** "1" / "7" → "01" / "07"; leaves non-numeric batch labels untouched. */
@@ -32,12 +32,37 @@ export async function createBatch(formData: FormData) {
   revalidatePath("/admin/tracker");
 }
 
+/** Soft delete — super_admin only. Coordinators can add batches but never delete them. */
 export async function deleteBatch(formData: FormData) {
-  await requireCoordinatorOrAdmin();
+  await requireAdmin();
+  const supabase = await createClient();
+  await supabase
+    .from("batches")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", String(formData.get("id")));
+  revalidatePath("/admin/batches");
+  revalidatePath("/admin/tracker");
+  redirect("/admin/batches");
+}
+
+export async function restoreBatch(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+  await supabase
+    .from("batches")
+    .update({ deleted_at: null })
+    .eq("id", String(formData.get("id")));
+  revalidatePath("/admin/batches");
+  revalidatePath("/admin/batches/trash");
+  revalidatePath("/admin/tracker");
+}
+
+/** Permanent delete from Trash — super_admin only, cannot be undone. */
+export async function purgeBatch(formData: FormData) {
+  await requireAdmin();
   const supabase = await createClient();
   await supabase.from("batches").delete().eq("id", String(formData.get("id")));
-  revalidatePath("/admin/batches");
-  redirect("/admin/batches");
+  revalidatePath("/admin/batches/trash");
 }
 
 export async function assignTeacher(formData: FormData) {

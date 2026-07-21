@@ -34,6 +34,7 @@ export default async function MyBatchDetailPage({
       </Link>
       <BatchDetail
         batch={data.batch}
+        courseId={data.course.id}
         courseName={data.course.name}
         abbreviation={data.course.abbreviation}
         topics={data.topics}

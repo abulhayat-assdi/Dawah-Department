@@ -72,8 +72,8 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/resources", label: "Resource Center", icon: "📁" },
   { href: "/admin/content", label: "Public Pages", icon: "🌐" },
   { href: "/admin/faculty", label: "Faculty (Public)", icon: "🧑‍🏫" },
-  { href: "/messages", label: "Messages", icon: "💬" },
   { href: "/admin/feedback", label: "Feedback & Complaints", icon: "📨" },
+  { href: "/admin/access", label: "Access Management", icon: "🔐" },
 ];
 
 // Campus Coordinators: scoped subset of ADMIN_NAV — no Campus/Course catalog
@@ -88,16 +88,25 @@ export const COORDINATOR_NAV: NavItem[] = [
   { href: "/admin/amali", label: "Amali Checklist", icon: "📿" },
   { href: "/admin/staff-tracker", label: "Staff Quran & Dawah Tracker", icon: "📖" },
   { href: "/admin/reports", label: "Reports", icon: "📝" },
-  { href: "/messages", label: "Messages", icon: "💬" },
 ];
 
 export const TEACHER_NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: "🏠" },
   { href: "/my/batches", label: "My Batches", icon: "🗂️" },
   { href: "/my/tasks", label: "My Tasks", icon: "✅" },
-  { href: "/my/amali", label: "Amali Checklist", icon: "📿" },
   { href: "/my/staff-tracker", label: "My Quran & Dawah", icon: "📖" },
   { href: "/my/report", label: "Daily Report", icon: "📝" },
-  { href: "/messages", label: "Messages", icon: "💬" },
   { href: "/my/profile", label: "My Profile", icon: "👤" },
 ];
+
+// Deduped catalog of every known page (by href), used by the Access
+// Management checkbox grid so the Super Admin can grant/revoke any page to
+// any individual user regardless of role.
+export const ALL_PAGES: NavItem[] = Array.from(
+  new Map(
+    [...ADMIN_NAV, ...COORDINATOR_NAV, ...TEACHER_NAV].map((item) => [
+      item.href,
+      item,
+    ]),
+  ).values(),
+);

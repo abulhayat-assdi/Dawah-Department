@@ -13,7 +13,7 @@ export async function createAmaliItem(formData: FormData) {
     campus_id: String(formData.get("campus_id") ?? "") || null,
   });
   revalidatePath("/admin/amali");
-  revalidatePath("/my/amali");
+  revalidatePath("/dashboard");
 }
 
 export async function toggleAmaliItem(formData: FormData) {
@@ -24,7 +24,7 @@ export async function toggleAmaliItem(formData: FormData) {
     .update({ is_active: String(formData.get("is_active")) === "true" })
     .eq("id", String(formData.get("id")));
   revalidatePath("/admin/amali");
-  revalidatePath("/my/amali");
+  revalidatePath("/dashboard");
 }
 
 export async function deleteAmaliItem(formData: FormData) {
@@ -32,5 +32,5 @@ export async function deleteAmaliItem(formData: FormData) {
   const supabase = await createClient();
   await supabase.from("amali_items").delete().eq("id", String(formData.get("id")));
   revalidatePath("/admin/amali");
-  revalidatePath("/my/amali");
+  revalidatePath("/dashboard");
 }

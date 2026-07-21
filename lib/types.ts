@@ -13,6 +13,8 @@ export interface Profile {
   id: string;
   full_name: string;
   role: UserRole;
+  /** Extra roles granted via the Access Management page, on top of `role` (the primary role). */
+  extra_roles: UserRole[];
   designation: string | null;
   phone: string | null;
   location: string | null;

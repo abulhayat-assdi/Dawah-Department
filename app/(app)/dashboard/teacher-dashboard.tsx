@@ -6,12 +6,14 @@ import {
   EmptyState,
   TaskStatusBadge,
   Button,
+  ProgressBar,
 } from "@/components/ui";
 import { TrackerTable } from "@/components/tracker-table";
 import { DashboardHero } from "@/components/dashboard-hero";
 import { NoticeBoard } from "@/components/notice-board";
 import { toBn, formatDate } from "@/lib/utils";
-import type { CourseTrackerRow, Task, Notice } from "@/lib/types";
+import { toggleAmaliLog } from "./actions";
+import type { CourseTrackerRow, Task, Notice, AmaliItem } from "@/lib/types";
 
 export function TeacherDashboard({
   name,
@@ -20,6 +22,8 @@ export function TeacherDashboard({
   tasks,
   reportedToday,
   notices,
+  amaliItems,
+  amaliDoneIds,
 }: {
   name: string;
   photoUrl?: string | null;
@@ -27,7 +31,15 @@ export function TeacherDashboard({
   tasks: Task[];
   reportedToday: boolean;
   notices: Notice[];
+  amaliItems: AmaliItem[];
+  amaliDoneIds: string[];
 }) {
+  const doneSet = new Set(amaliDoneIds);
+  const amaliPct =
+    amaliItems.length > 0
+      ? Math.round((doneSet.size / amaliItems.length) * 100)
+      : 0;
+
   return (
     <div className="space-y-6">
       <DashboardHero
@@ -66,6 +78,60 @@ export function TeacherDashboard({
       </div>
 
       <NoticeBoard notices={notices} isAdmin={false} />
+
+      <Card>
+        <CardHeader
+          title="আজকের আমল"
+          subtitle={`${doneSet.size} / ${amaliItems.length} সম্পন্ন`}
+          action={
+            <div className="w-40">
+              <ProgressBar value={amaliPct} />
+            </div>
+          }
+        />
+        {amaliItems.length === 0 ? (
+          <EmptyState
+            icon="📿"
+            title="কোনো আমলি আইটেম নেই"
+            hint="কোঅর্ডিনেটর আইটেম যুক্ত করলে এখানে দেখা যাবে।"
+          />
+        ) : (
+          <ul className="divide-y divide-slate-50">
+            {amaliItems.map((it) => {
+              const done = doneSet.has(it.id);
+              return (
+                <li key={it.id} className="px-5 py-1">
+                  <form action={toggleAmaliLog}>
+                    <input type="hidden" name="item_id" value={it.id} />
+                    <input type="hidden" name="done" value={(!done).toString()} />
+                    <button
+                      type="submit"
+                      className="flex w-full items-center gap-3 py-2.5 text-left"
+                    >
+                      <span
+                        className={
+                          done
+                            ? "grid size-6 shrink-0 place-items-center rounded-md bg-green-500 text-sm text-white"
+                            : "grid size-6 shrink-0 place-items-center rounded-md border border-slate-300 text-transparent"
+                        }
+                      >
+                        ✓
+                      </span>
+                      <span
+                        className={
+                          done ? "text-slate-400 line-through" : "text-slate-800"
+                        }
+                      >
+                        {it.title}
+                      </span>
+                    </button>
+                  </form>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Card>
 
       <Card>
         <CardHeader

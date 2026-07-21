@@ -4,30 +4,28 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { clsx } from "@/lib/utils";
-import { ADMIN_NAV, COORDINATOR_NAV, TEACHER_NAV, ROLE_LABEL } from "@/lib/constants";
+import type { NavItem } from "@/lib/constants";
 import type { Profile } from "@/lib/types";
+import { allRoles } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { NotificationBell } from "@/components/notification-bell";
 import { HeaderDateTime } from "@/components/datetime";
 import { Avatar } from "@/components/avatar";
+import { RoleBadges } from "@/components/role-badges";
 
 export function AppShell({
   profile,
+  nav,
   children,
 }: {
   profile: Profile;
+  nav: NavItem[];
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const nav =
-    profile.role === "super_admin"
-      ? ADMIN_NAV
-      : profile.role === "coordinator"
-        ? COORDINATOR_NAV
-        : TEACHER_NAV;
 
   async function signOut() {
     const supabase = createClient();
@@ -137,9 +135,7 @@ export function AppShell({
                 <p className="text-sm font-semibold text-slate-900">
                   {profile.full_name || "User"}
                 </p>
-                <p className="text-[11px] text-slate-500">
-                  {ROLE_LABEL[profile.role]}
-                </p>
+                <RoleBadges roles={allRoles(profile)} className="justify-end" />
               </div>
               <Avatar name={profile.full_name} photoUrl={profile.photo_url} size={36} />
             </div>

@@ -12,7 +12,8 @@ export default async function ActivitiesPage() {
       .from("batches")
       .select("campus_id, course_id, active_student_count")
       .eq("status", "ongoing")
-      .not("campus_id", "is", null),
+      .not("campus_id", "is", null)
+      .is("deleted_at", null),
   ]);
   const campuses = (campusData ?? []) as Campus[];
   const batches = (batchData ?? []) as {

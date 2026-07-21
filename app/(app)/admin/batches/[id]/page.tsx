@@ -39,6 +39,7 @@ export default async function AdminBatchDetailPage({
 
       <BatchDetail
         batch={data.batch}
+        courseId={data.course.id}
         courseName={data.course.name}
         abbreviation={data.course.abbreviation}
         topics={data.topics}

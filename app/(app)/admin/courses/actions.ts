@@ -84,6 +84,15 @@ export async function deleteSyllabus(formData: FormData) {
   revalidatePath("/academic");
 }
 
+/** Topics belong to a course but are managed from a batch's detail page; an
+ * optional batch_id lets us revalidate that page too (course_id alone can't
+ * tell us which batch the admin was looking at). */
+function revalidateTopicViews(formData: FormData, course_id: string) {
+  revalidatePath(`/admin/courses/${course_id}`);
+  const batch_id = formData.get("batch_id");
+  if (batch_id) revalidatePath(`/admin/batches/${String(batch_id)}`);
+}
+
 export async function addTopic(formData: FormData) {
   await requireAdmin();
   const supabase = await createClient();
@@ -94,7 +103,7 @@ export async function addTopic(formData: FormData) {
     title: String(formData.get("title") ?? "").trim(),
     description: String(formData.get("description") ?? "").trim() || null,
   });
-  revalidatePath(`/admin/courses/${course_id}`);
+  revalidateTopicViews(formData, course_id);
 }
 
 export async function deleteTopic(formData: FormData) {
@@ -105,5 +114,5 @@ export async function deleteTopic(formData: FormData) {
     .from("syllabus_topics")
     .delete()
     .eq("id", String(formData.get("id")));
-  revalidatePath(`/admin/courses/${course_id}`);
+  revalidateTopicViews(formData, course_id);
 }

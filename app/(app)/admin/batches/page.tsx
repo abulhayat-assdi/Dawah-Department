@@ -1,4 +1,5 @@
-import { requireCoordinatorOrAdmin } from "@/lib/auth";
+import Link from "next/link";
+import { requireCoordinatorOrAdmin, allRoles } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
   Card,
@@ -16,6 +17,7 @@ import type { Campus, Course, CourseTrackerRow } from "@/lib/types";
 
 export default async function BatchesPage() {
   const profile = await requireCoordinatorOrAdmin();
+  const isSuperAdmin = allRoles(profile).includes("super_admin");
   const supabase = await createClient();
 
   let campusIds: string[] | null = null; // null = every campus (super_admin)
@@ -61,6 +63,16 @@ export default async function BatchesPage() {
       <PageHeader
         title="Batch Management"
         subtitle="Start a new batch and assign teachers."
+        action={
+          isSuperAdmin && (
+            <Link
+              href="/admin/batches/trash"
+              className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+            >
+              🗑️ Trash
+            </Link>
+          )
+        }
       />
 
       <Card>
@@ -128,7 +140,7 @@ export default async function BatchesPage() {
         {rows.length === 0 ? (
           <EmptyState icon="🗂️" title="No batches yet" />
         ) : (
-          <TrackerTable rows={rows} hrefBase="/admin/batches" />
+          <TrackerTable rows={rows} hrefBase="/admin/batches" canDelete={isSuperAdmin} />
         )}
       </Card>
     </div>

@@ -83,7 +83,7 @@ export function StatCard({
           </span>
         )}
       </div>
-      <p className="mt-2 text-3xl font-bold text-slate-900">{value}</p>
+      <p className="mt-2 text-center text-3xl font-bold text-slate-900">{value}</p>
     </Card>
   );
 }
@@ -97,13 +97,20 @@ export function ProgressBar({
   className?: string;
 }) {
   const pct = Math.max(0, Math.min(100, value));
-  const color =
-    pct >= 100 ? "bg-green-500" : pct >= 50 ? "bg-brand-500" : "bg-yellow-500";
+  const gradient =
+    pct >= 100
+      ? "from-green-400 to-green-600"
+      : pct >= 50
+        ? "from-brand-400 to-brand-600"
+        : "from-yellow-400 to-yellow-500";
   return (
     <div className={clsx("flex items-center gap-2", className)}>
-      <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+      <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100 shadow-inner">
         <div
-          className={clsx("h-full rounded-full transition-all", color)}
+          className={clsx(
+            "h-full rounded-full bg-gradient-to-r transition-all duration-700 ease-out",
+            gradient,
+          )}
           style={{ width: `${pct}%` }}
         />
       </div>

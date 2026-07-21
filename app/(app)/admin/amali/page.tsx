@@ -55,8 +55,8 @@ export default async function AdminAmaliPage({
   return (
     <div className="space-y-6">
       <PageHeader
-        title="আমলি কর্মসূচি"
-        subtitle="সদস্যদের দৈনিক আমলি চেকলিস্টের আইটেম তৈরি ও পরিচালনা করুন।"
+        title="আমলি চেকলিস্ট পরিচালনা"
+        subtitle="এখানে যেসব আইটেম যোগ করবেন, সেগুলোই সদস্যদের ড্যাশবোর্ডে দৈনিক চেকলিস্ট হিসেবে দেখা যাবে।"
       />
 
       <div className="grid gap-6 lg:grid-cols-3">

@@ -26,6 +26,7 @@ export async function loadBatchDetail(
     .from("batches")
     .select("*")
     .eq("id", batchId)
+    .is("deleted_at", null)
     .single();
   if (!batch) return null;
 

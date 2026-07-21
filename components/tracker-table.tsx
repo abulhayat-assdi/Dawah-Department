@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { CourseTrackerRow } from "@/lib/types";
 import { ExamBadge, BatchStatusBadge, ProgressBar, EmptyState } from "./ui";
 import { formatDate, toBn } from "@/lib/utils";
+import { deleteBatch } from "@/app/(app)/admin/batches/actions";
+import { DeleteButton } from "@/components/delete-button";
 
 /**
  * The course-progress tracking table from Information.docx:
@@ -11,9 +13,11 @@ import { formatDate, toBn } from "@/lib/utils";
 export function TrackerTable({
   rows,
   hrefBase = "/admin/batches",
+  canDelete = false,
 }: {
   rows: CourseTrackerRow[];
   hrefBase?: string;
+  canDelete?: boolean;
 }) {
   if (!rows.length) {
     return (
@@ -42,19 +46,21 @@ export function TrackerTable({
             <th className="px-3 py-3 text-center">Days Left</th>
             <th className="px-3 py-3 text-center">Est. (pace)</th>
             <th className="px-3 py-3">Farewell</th>
+            {canDelete && <th className="px-3 py-3 text-right">Actions</th>}
           </tr>
         </thead>
         <tbody>
           {rows.map((r, i) => (
             <tr
               key={r.batch_id}
-              className="border-b border-slate-50 hover:bg-slate-50/60"
+              className="animate-row-in border-b border-slate-50 transition-colors hover:bg-slate-50/70"
+              style={{ animationDelay: `${Math.min(i, 12) * 45}ms` }}
             >
               <td className="px-3 py-3 text-slate-400">{toBn(i + 1)}</td>
               <td className="px-3 py-3">
                 <Link
                   href={`${hrefBase}/${r.batch_id}`}
-                  className="font-semibold text-slate-900 hover:text-brand-600"
+                  className="font-semibold text-slate-900 transition-colors hover:text-brand-600"
                 >
                   {r.course_info}
                 </Link>
@@ -90,6 +96,17 @@ export function TrackerTable({
               <td className="px-3 py-3 text-slate-600">
                 {formatDate(r.farewell_date)}
               </td>
+              {canDelete && (
+                <td className="px-3 py-3 text-right">
+                  <DeleteButton
+                    action={deleteBatch}
+                    id={r.batch_id}
+                    label="Delete"
+                    confirmText="এই ব্যাচটি Trash-এ পাঠাবেন? সুপার এডমিন ৩০ দিনের মধ্যে এটি Restore করতে পারবেন।"
+                    className="text-xs"
+                  />
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

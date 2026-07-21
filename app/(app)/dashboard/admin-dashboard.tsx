@@ -1,5 +1,4 @@
 import { Card, CardHeader, StatCard, EmptyState } from "@/components/ui";
-import { TrackerTable } from "@/components/tracker-table";
 import { DashboardHero } from "@/components/dashboard-hero";
 import { NoticeBoard } from "@/components/notice-board";
 import { toBn, formatDate } from "@/lib/utils";
@@ -50,14 +49,6 @@ export function AdminDashboard({
       </div>
 
       <NoticeBoard notices={notices} isAdmin={canManageNotices} campuses={noticeCampuses} />
-
-      <Card>
-        <CardHeader
-          title="Course Progress Tracker"
-          subtitle="Real-time progress across all batches"
-        />
-        <TrackerTable rows={tracker} />
-      </Card>
 
       <Card>
         <CardHeader title="Recent Feedback & Complaints" subtitle="Received from the website" />
