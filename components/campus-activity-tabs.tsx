@@ -78,9 +78,9 @@ export function CampusActivityTabs({
         </div>
       </div>
 
-      <h3 className="mt-10 text-xl font-bold text-slate-900">চলমান কোর্সসমূহ</h3>
+      <h3 className="mt-10 text-xl font-bold text-slate-900">কোর্সসমূহ</h3>
       {courses.length === 0 ? (
-        <p className="mt-3 text-slate-400">এই ক্যাম্পাসে এখন কোনো কোর্স চলছে না।</p>
+        <p className="mt-3 text-slate-400">এই ক্যাম্পাসে এখন কোনো কোর্স চালু নেই।</p>
       ) : (
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {courses.map((co) => (
@@ -91,18 +91,18 @@ export function CampusActivityTabs({
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h4 className="font-bold text-slate-900">{co.course_name}</h4>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {co.abbreviation}
-                    {co.duration_label ? ` · ${co.duration_label}` : ""}
-                  </p>
                 </div>
-                <span className="shrink-0 rounded-lg bg-brand-50 px-3 py-1.5 text-center text-xs font-semibold text-brand-700">
-                  🧑‍🎓 {toBn(co.active_student_count)} জন শিক্ষার্থী
-                </span>
+                {co.batch_count > 0 && (
+                  <span className="shrink-0 rounded-lg bg-brand-50 px-3 py-1.5 text-center text-xs font-semibold text-brand-700">
+                    🧑‍🎓 {toBn(co.active_student_count)} জন শিক্ষার্থী
+                  </span>
+                )}
               </div>
-              <p className="mt-3 text-xs text-slate-400">
-                {toBn(co.batch_count)}টি চলমান ব্যাচ
-              </p>
+              {co.batch_count > 0 && (
+                <p className="mt-3 text-xs text-slate-400">
+                  {toBn(co.batch_count)}টি চলমান ব্যাচ
+                </p>
+              )}
             </div>
           ))}
         </div>

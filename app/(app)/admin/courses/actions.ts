@@ -43,44 +43,46 @@ export async function deleteCourse(formData: FormData) {
   redirect("/admin/courses");
 }
 
-/** Upserts the syllabus PDF for one course + kind (quran/general/dawah). */
-export async function uploadSyllabus(formData: FormData) {
-  const profile = await requireAdmin();
+/** Adds a new named entry to the syllabus library, with an optional PDF. */
+export async function createSyllabusDocument(formData: FormData) {
+  await requireAdmin();
   const supabase = await createClient();
-  const course_id = String(formData.get("course_id"));
-  const syllabus_kind = String(formData.get("syllabus_kind"));
-  const url = String(formData.get("file_url") ?? "").trim();
-  if (!url) return;
+  const title = String(formData.get("title") ?? "").trim();
+  if (!title) return;
+  const url = String(formData.get("file_url") ?? "").trim() || null;
 
-  const { data: existing } = await supabase
-    .from("resources")
-    .select("id")
-    .eq("course_id", course_id)
-    .eq("syllabus_kind", syllabus_kind)
+  const { data: maxRow } = await supabase
+    .from("syllabus_documents")
+    .select("sort_order")
+    .order("sort_order", { ascending: false })
+    .limit(1)
     .maybeSingle();
+  const sort_order = ((maxRow?.sort_order as number) ?? 0) + 1;
 
-  if (existing) {
-    await supabase.from("resources").update({ url }).eq("id", existing.id as string);
-  } else {
-    await supabase.from("resources").insert({
-      title: `${syllabus_kind} syllabus`,
-      type: "pdf",
-      url,
-      course_id,
-      syllabus_kind,
-      uploaded_by: profile.id,
-    });
-  }
-  revalidatePath(`/admin/courses/${course_id}`);
+  await supabase.from("syllabus_documents").insert({ title, url, sort_order });
+  revalidatePath("/admin/courses");
   revalidatePath("/academic");
 }
 
-export async function deleteSyllabus(formData: FormData) {
+/** Replaces the PDF attached to an existing syllabus library entry. */
+export async function updateSyllabusDocumentFile(formData: FormData) {
   await requireAdmin();
   const supabase = await createClient();
-  const course_id = String(formData.get("course_id"));
-  await supabase.from("resources").delete().eq("id", String(formData.get("id")));
-  revalidatePath(`/admin/courses/${course_id}`);
+  const url = String(formData.get("file_url") ?? "").trim();
+  if (!url) return;
+  await supabase
+    .from("syllabus_documents")
+    .update({ url })
+    .eq("id", String(formData.get("id")));
+  revalidatePath("/admin/courses");
+  revalidatePath("/academic");
+}
+
+export async function deleteSyllabusDocument(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+  await supabase.from("syllabus_documents").delete().eq("id", String(formData.get("id")));
+  revalidatePath("/admin/courses");
   revalidatePath("/academic");
 }
 

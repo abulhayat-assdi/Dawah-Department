@@ -3,23 +3,20 @@ import { getContent } from "@/lib/content";
 import { PublicHero } from "@/components/public-hero";
 import { RichText } from "@/components/rich-text";
 import { ProgramsToggle } from "@/components/programs-toggle";
-import type { Course } from "@/lib/types";
+import type { Course, SyllabusDocument } from "@/lib/types";
 
 export default async function AcademicPage() {
   const [ac, supabase] = await Promise.all([getContent("academic"), createClient()]);
   const [{ data }, { data: syllabusData }] = await Promise.all([
     supabase.from("courses").select("*").order("abbreviation"),
     supabase
-      .from("resources")
-      .select("course_id, syllabus_kind, url")
-      .not("syllabus_kind", "is", null),
+      .from("syllabus_documents")
+      .select("*")
+      .not("url", "is", null)
+      .order("sort_order"),
   ]);
   const courses = (data ?? []) as Course[];
-  const syllabusDocs = (syllabusData ?? []) as {
-    course_id: string;
-    syllabus_kind: string;
-    url: string;
-  }[];
+  const syllabusDocs = (syllabusData ?? []) as SyllabusDocument[];
 
   return (
     <div>
@@ -64,9 +61,37 @@ export default async function AcademicPage() {
             </span>
             <h2 className="text-2xl font-bold text-slate-900">{ac.programsHeading}</h2>
           </div>
-          <ProgramsToggle courses={courses} syllabusDocs={syllabusDocs} />
+          <ProgramsToggle courses={courses} />
         </div>
       </section>
+
+      {/* Syllabus library */}
+      {syllabusDocs.length > 0 && (
+        <section className="bg-white py-16">
+          <div className="mx-auto max-w-6xl px-4 lg:px-6">
+            <div className="mb-8 flex items-center gap-3">
+              <span className="grid size-9 place-items-center rounded-lg bg-gold-400 text-sm font-bold text-brand-900">
+                📄
+              </span>
+              <h2 className="text-2xl font-bold text-slate-900">সিলেবাস</h2>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {syllabusDocs.map((doc) => (
+                <a
+                  key={doc.id}
+                  href={doc.url!}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md"
+                >
+                  <span className="text-xl">📎</span>
+                  {doc.title}
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Dawah class section */}
       <section className="mx-auto max-w-6xl px-4 py-16 lg:px-6">

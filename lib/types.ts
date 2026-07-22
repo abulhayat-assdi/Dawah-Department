@@ -52,6 +52,15 @@ export interface Faculty {
   sort: number;
 }
 
+/** A standalone syllabus PDF entry (see syllabus_documents), independent of any course. */
+export interface SyllabusDocument {
+  id: string;
+  title: string;
+  url: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
 export interface Course {
   id: string;
   name: string;

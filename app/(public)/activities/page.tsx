@@ -6,50 +6,51 @@ import type { Campus, Course } from "@/lib/types";
 
 export default async function ActivitiesPage() {
   const [act, supabase] = await Promise.all([getContent("activities"), createClient()]);
-  const [{ data: campusData }, { data: batchData }] = await Promise.all([
+  const [{ data: campusData }, { data: courseData }] = await Promise.all([
     supabase.from("campuses").select("*").order("name"),
-    supabase
-      .from("batches")
-      .select("campus_id, course_id, active_student_count")
-      .eq("status", "ongoing")
-      .not("campus_id", "is", null)
-      .is("deleted_at", null),
+    // Courses assigned to a campus (via the checkbox grid on Campuses & Courses)
+    // are the source of truth for what runs there, independent of whether a
+    // batch currently exists — a campus can advertise a course before its
+    // first batch starts.
+    supabase.from("courses").select("*").not("campus_id", "is", null),
   ]);
   const campuses = (campusData ?? []) as Campus[];
-  const batches = (batchData ?? []) as {
-    campus_id: string;
-    course_id: string;
-    active_student_count: number;
-  }[];
+  const courses = (courseData ?? []) as Course[];
 
-  const courseIds = [...new Set(batches.map((b) => b.course_id))];
-  const { data: courseData } = courseIds.length
-    ? await supabase.from("courses").select("*").in("id", courseIds)
-    : { data: [] as Course[] };
-  const coursesById = new Map((courseData ?? []).map((c) => [c.id, c as Course]));
+  const courseIds = courses.map((c) => c.id);
+  const { data: batchData } = courseIds.length
+    ? await supabase
+        .from("batches")
+        .select("course_id, active_student_count")
+        .eq("status", "ongoing")
+        .is("deleted_at", null)
+        .in("course_id", courseIds)
+    : { data: [] as { course_id: string; active_student_count: number }[] };
+  const batches = (batchData ?? []) as { course_id: string; active_student_count: number }[];
 
-  const byKey = new Map<string, RunningCourseRow>();
+  const statsByCourse = new Map<string, { batch_count: number; active_student_count: number }>();
   for (const b of batches) {
-    const course = coursesById.get(b.course_id);
-    if (!course) continue;
-    const key = `${b.campus_id}:${b.course_id}`;
-    const existing = byKey.get(key);
+    const existing = statsByCourse.get(b.course_id);
     if (existing) {
       existing.batch_count += 1;
       existing.active_student_count += b.active_student_count;
     } else {
-      byKey.set(key, {
-        course_id: course.id,
-        course_name: course.name,
-        abbreviation: course.abbreviation,
-        duration_label: course.duration_label,
-        campus_id: b.campus_id,
-        batch_count: 1,
-        active_student_count: b.active_student_count,
-      });
+      statsByCourse.set(b.course_id, { batch_count: 1, active_student_count: b.active_student_count });
     }
   }
-  const rows = [...byKey.values()];
+
+  const rows: RunningCourseRow[] = courses.map((course) => {
+    const stats = statsByCourse.get(course.id);
+    return {
+      course_id: course.id,
+      course_name: course.name,
+      abbreviation: course.abbreviation,
+      duration_label: course.duration_label,
+      campus_id: course.campus_id as string,
+      batch_count: stats?.batch_count ?? 0,
+      active_student_count: stats?.active_student_count ?? 0,
+    };
+  });
 
   return (
     <div>
