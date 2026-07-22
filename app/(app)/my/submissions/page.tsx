@@ -30,6 +30,7 @@ export default async function MySubmissionsPage() {
     { data: batchData },
     { data: courseData },
     { data: subData },
+    { data: myCampusLinks },
   ] = await Promise.all([
     supabase
       .from("tasks")
@@ -47,6 +48,10 @@ export default async function MySubmissionsPage() {
       .eq("teacher_id", profile.id)
       .order("created_at", { ascending: false })
       .limit(30),
+    supabase
+      .from("teacher_campuses")
+      .select("campus_id")
+      .eq("teacher_id", profile.id),
   ]);
 
   const trackerRows = (batchData ?? []) as Pick<
@@ -64,6 +69,21 @@ export default async function MySubmissionsPage() {
     course_id: b.course_id ?? null,
     label: `${b.course_info} — Batch ${b.batch_no}`,
   }));
+
+  // Batches at the teacher's own campus(es) — used for the "Makeup Class"
+  // dropdown under Other Task, scoped to their shed rather than every batch.
+  const myCampusIds = new Set(
+    (myCampusLinks ?? []).map((r) => r.campus_id as string),
+  );
+  const myCampusBatches: SubBatchOption[] = allBatches.filter(
+    (b) => b.campus_id && myCampusIds.has(b.campus_id),
+  );
+  // Staff Makeup Class has no batch to derive a campus from — default to the
+  // teacher's own campus so coordinator visibility (RLS scopes by campus_id)
+  // still works.
+  const myCampusId: string | null = myCampusIds.size
+    ? [...myCampusIds][0]
+    : null;
 
   const courses: SubCourseOption[] = ((courseData ?? []) as Course[]).map(
     (c) => ({
@@ -107,6 +127,8 @@ export default async function MySubmissionsPage() {
         <SubmissionForm
           allocatedBatches={allocatedBatches}
           allBatches={allBatches}
+          myCampusBatches={myCampusBatches}
+          myCampusId={myCampusId}
           courses={courses}
           monthLabel={monthLabel}
         />

@@ -10,6 +10,23 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
   teacher: TEACHER_NAV,
 };
 
+// Teacher-only href variants of pages that also have an admin/coordinator
+// href (Weekly Lesson Plan, Teacher Resources). When a profile holds
+// multiple roles, these get merged in after every other role's pages —
+// pull them up to sit right after "Submit Class Task" instead of trailing
+// at the very bottom of the sidebar.
+const SUBMIT_CLASS_TASK_HREF = "/my/submissions";
+const TEACHER_ONLY_VARIANT_HREFS = new Set(["/my/lesson-plan", "/my/resources"]);
+
+function withTeacherVariantsAfterSubmitTask(items: NavItem[]): NavItem[] {
+  const extras = items.filter((item) => TEACHER_ONLY_VARIANT_HREFS.has(item.href));
+  if (extras.length === 0) return items;
+  const rest = items.filter((item) => !TEACHER_ONLY_VARIANT_HREFS.has(item.href));
+  const anchor = rest.findIndex((item) => item.href === SUBMIT_CLASS_TASK_HREF);
+  if (anchor === -1) return items;
+  return [...rest.slice(0, anchor + 1), ...extras, ...rest.slice(anchor + 1)];
+}
+
 export default async function AppLayout({
   children,
 }: {
@@ -32,7 +49,7 @@ export default async function AppLayout({
         seen.set(item.href, item);
       }
     }
-    nav = Array.from(seen.values());
+    nav = withTeacherVariantsAfterSubmitTask(Array.from(seen.values()));
   } else {
     const { data: grants } = await supabase
       .from("user_page_access")
@@ -41,7 +58,9 @@ export default async function AppLayout({
 
     if (grants && grants.length > 0) {
       const allowed = new Set(grants.map((g) => g.href as string));
-      nav = ALL_PAGES.filter((item) => allowed.has(item.href));
+      nav = withTeacherVariantsAfterSubmitTask(
+        ALL_PAGES.filter((item) => allowed.has(item.href)),
+      );
     } else {
       // No explicit grants yet — fall back to the union of nav for every
       // role this profile holds (primary role + Access-Management extras).
@@ -51,12 +70,12 @@ export default async function AppLayout({
           seen.set(item.href, item);
         }
       }
-      nav = Array.from(seen.values());
+      nav = withTeacherVariantsAfterSubmitTask(Array.from(seen.values()));
     }
   }
 
   return (
-    <AppShell profile={profile} nav={nav}>
+    <AppShell profile={profile} navHrefs={nav.map((item) => item.href)}>
       {children}
     </AppShell>
   );

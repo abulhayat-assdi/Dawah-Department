@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { clsx } from "@/lib/utils";
-import type { NavItem } from "@/lib/constants";
+import { ALL_PAGES } from "@/lib/constants";
 import type { Profile } from "@/lib/types";
 import { allRoles } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
@@ -16,13 +16,16 @@ import { RoleBadges } from "@/components/role-badges";
 
 export function AppShell({
   profile,
-  nav,
+  navHrefs,
   children,
 }: {
   profile: Profile;
-  nav: NavItem[];
+  navHrefs: string[];
   children: React.ReactNode;
 }) {
+  const nav = navHrefs
+    .map((href) => ALL_PAGES.find((item) => item.href === href))
+    .filter((item): item is (typeof ALL_PAGES)[number] => item != null);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -63,6 +66,7 @@ export function AppShell({
             const active =
               pathname === item.href ||
               (item.href !== "/dashboard" && pathname.startsWith(item.href));
+            const Icon = item.icon;
             return (
               <Link
                 key={item.href}
@@ -71,17 +75,17 @@ export function AppShell({
                 className={clsx(
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
                   active
-                    ? "bg-brand-50 text-brand-700"
+                    ? "bg-brand-50 text-brand-700 shadow-[0_0_0_1px_var(--color-brand-200),0_0_16px_var(--color-brand-200)]"
                     : "text-slate-600 hover:bg-slate-50",
                 )}
               >
                 <span
                   className={clsx(
-                    "grid size-8 place-items-center rounded-lg text-base transition",
-                    active ? "bg-brand-100" : "bg-slate-100",
+                    "grid size-8 shrink-0 place-items-center rounded-lg transition",
+                    active ? "bg-brand-100 text-brand-700" : "bg-slate-100 text-slate-500",
                   )}
                 >
-                  {item.icon}
+                  <Icon size={18} strokeWidth={2} />
                 </span>
                 {item.label}
               </Link>

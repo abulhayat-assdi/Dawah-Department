@@ -255,8 +255,8 @@ export const CONTENT_DEFAULTS: SiteContentMap = {
     hoursTime: "সকাল ১০:০০ - রাত ০৮:০০",
     emergencyLabel: "জরুরী সরবরাহ",
     emergencyPhone: "+৮৮০ ১২৩৪ ৫৬৭৮৯০",
-    formTitle: "যোগাযোগের ফর্ম",
-    formNote: "",
+    formTitle: "আপনার মূল্যবান মতামত ও ফিডব্যাক জানান",
+    formNote: "নিচের ফর্মটি পূরণ করে আপনার মতামত, পরামর্শ বা অভিযোগ আমাদের জানান। নাম উল্লেখ করা ঐচ্ছিক।",
   },
   activities: {
     heroTitle: "ক্যাম্পাস ও দাওয়াহ কার্যক্রম",

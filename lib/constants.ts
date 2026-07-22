@@ -6,6 +6,29 @@ import type {
   TaskStatus,
   UserRole,
 } from "./types";
+import {
+  LayoutDashboard,
+  LineChart,
+  ClipboardList,
+  FileBarChart,
+  ListChecks,
+  CalendarDays,
+  NotebookPen,
+  BookOpenCheck,
+  UploadCloud,
+  FolderKanban,
+  BookOpen,
+  Building2,
+  GraduationCap,
+  FileSpreadsheet,
+  Globe,
+  Users2,
+  MessageSquareWarning,
+  ShieldCheck,
+  Users,
+  UserCircle2,
+  type LucideIcon,
+} from "lucide-react";
 
 // English labels + Tailwind color classes for the status semantics in the spec.
 
@@ -108,57 +131,97 @@ export const COURSE_CATEGORY_LABEL: Record<string, string> = {
   common: "Both (scholars & general)",
 };
 
-// Sidebar navigation, keyed by role.
+// Week numbers offered by the Weekly Lesson Plan module's week selector.
+export const LESSON_PLAN_WEEKS = [1, 2, 3, 4, 5];
+
+// Sidebar navigation, keyed by role. Order follows the fixed 1–19 spec —
+// do not resort alphabetically or by feature area. The Weekly Lesson Plan
+// entry is separate in-progress work (not part of the numbered spec) kept
+// in its existing slot, right after Campus Routine, for every role.
 export interface NavItem {
   href: string;
   label: string;
-  icon: string; // emoji keeps the bundle tiny; swap for an icon set later
+  icon: LucideIcon;
 }
 
+const NAV_1_DASHBOARD: NavItem = { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard };
+const NAV_2_TRACKER: NavItem = { href: "/admin/tracker", label: "Course Progress Tracker", icon: LineChart };
+const NAV_3_TASKS: NavItem = { href: "/admin/tasks", label: "Task Management", icon: ClipboardList };
+const NAV_4_TASK_REPORT: NavItem = { href: "/admin/task-report", label: "Task Report", icon: FileBarChart };
+const NAV_5_MY_TASKS: NavItem = { href: "/my/tasks", label: "My Tasks", icon: ListChecks };
+const NAV_6_ROUTINE: NavItem = { href: "/routine", label: "Campus Routine", icon: CalendarDays };
+const NAV_LESSON_PLAN_ADMIN: NavItem = { href: "/admin/lesson-plan", label: "Weekly Lesson Plan", icon: NotebookPen };
+const NAV_LESSON_PLAN_TEACHER: NavItem = { href: "/my/lesson-plan", label: "Weekly Lesson Plan", icon: NotebookPen };
+const NAV_7_AMALI: NavItem = { href: "/admin/amali", label: "Amali Checklist", icon: BookOpenCheck };
+const NAV_8_SUBMIT_CLASS_TASK: NavItem = { href: "/my/submissions", label: "Submit Class Task", icon: UploadCloud };
+const NAV_9_BATCHES: NavItem = { href: "/admin/batches", label: "Batch Management", icon: FolderKanban };
+const NAV_10_TEACHER_RESOURCES_ADMIN: NavItem = { href: "/admin/teacher-resources", label: "Teacher Resources", icon: BookOpen };
+const NAV_10_TEACHER_RESOURCES_TEACHER: NavItem = { href: "/my/resources", label: "Teacher Resources", icon: BookOpen };
+const NAV_11_CAMPUSES: NavItem = { href: "/admin/campuses", label: "Campuses & Courses", icon: Building2 };
+const NAV_12_COURSES: NavItem = { href: "/admin/courses", label: "Course & Syllabus", icon: GraduationCap };
+const NAV_13_REPORTS: NavItem = { href: "/admin/reports", label: "Reports", icon: FileSpreadsheet };
+const NAV_14_CONTENT: NavItem = { href: "/admin/content", label: "Public Pages", icon: Globe };
+const NAV_15_FACULTY: NavItem = { href: "/admin/faculty", label: "Faculty (Public)", icon: Users2 };
+const NAV_16_FEEDBACK: NavItem = { href: "/admin/feedback", label: "Feedback & Complaints", icon: MessageSquareWarning };
+const NAV_17_ACCESS: NavItem = { href: "/admin/access", label: "Access Management", icon: ShieldCheck };
+const NAV_18_TEACHERS: NavItem = { href: "/admin/teachers", label: "Teachers / Members", icon: Users };
+const NAV_19_PROFILE: NavItem = { href: "/my/profile", label: "My Profile", icon: UserCircle2 };
+
+// Super Admin: all 19 spec links, in strict order, full read/write.
 export const ADMIN_NAV: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: "🏠" },
-  { href: "/admin/tracker", label: "Course Progress Tracker", icon: "📊" },
-  { href: "/admin/campuses", label: "Campuses & Courses", icon: "🏛️" },
-  { href: "/admin/teachers", label: "Teachers / Members", icon: "👥" },
-  { href: "/admin/courses", label: "Courses & Syllabus", icon: "📚" },
-  { href: "/admin/batches", label: "Batch Management", icon: "🗂️" },
-  { href: "/routine", label: "Campus Routine", icon: "🗓️" },
-  { href: "/admin/tasks", label: "Task Management", icon: "✅" },
-  { href: "/admin/task-report", label: "Task Report", icon: "📈" },
-  { href: "/admin/amali", label: "Amali Checklist", icon: "📿" },
-  { href: "/admin/reports", label: "Reports", icon: "📝" },
-  { href: "/admin/teacher-resources", label: "Teacher Resources", icon: "🗄️" },
-  { href: "/admin/content", label: "Public Pages", icon: "🌐" },
-  { href: "/admin/faculty", label: "Faculty (Public)", icon: "🧑‍🏫" },
-  { href: "/admin/feedback", label: "Feedback & Complaints", icon: "📨" },
-  { href: "/admin/access", label: "Access Management", icon: "🔐" },
+  NAV_1_DASHBOARD,
+  NAV_2_TRACKER,
+  NAV_3_TASKS,
+  NAV_4_TASK_REPORT,
+  NAV_5_MY_TASKS,
+  NAV_6_ROUTINE,
+  NAV_LESSON_PLAN_ADMIN,
+  NAV_7_AMALI,
+  NAV_8_SUBMIT_CLASS_TASK,
+  NAV_9_BATCHES,
+  NAV_10_TEACHER_RESOURCES_ADMIN,
+  NAV_11_CAMPUSES,
+  NAV_12_COURSES,
+  NAV_13_REPORTS,
+  NAV_14_CONTENT,
+  NAV_15_FACULTY,
+  NAV_16_FEEDBACK,
+  NAV_17_ACCESS,
+  NAV_18_TEACHERS,
+  NAV_19_PROFILE,
 ];
 
-// Campus Coordinators: scoped subset of ADMIN_NAV — no Campus/Course catalog
-// management or public-site admin, but full batch/tracker/task/amali access
-// within their assigned campus(es) (enforced by RLS, not just hidden nav).
+// Campus/Shed Coordinators: the Teacher/Member subset plus Task Management,
+// Task Report, Batch Management, Reports and Faculty (Public), scoped to
+// their assigned campus(es) via RLS — not just hidden nav.
 export const COORDINATOR_NAV: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: "🏠" },
-  { href: "/admin/tracker", label: "Course Progress Tracker", icon: "📊" },
-  { href: "/admin/teachers", label: "Teachers / Members", icon: "👥" },
-  { href: "/admin/batches", label: "Batch Management", icon: "🗂️" },
-  { href: "/routine", label: "Campus Routine", icon: "🗓️" },
-  { href: "/admin/tasks", label: "Task Management", icon: "✅" },
-  { href: "/admin/task-report", label: "Task Report", icon: "📈" },
-  { href: "/admin/amali", label: "Amali Checklist", icon: "📿" },
-  { href: "/admin/reports", label: "Reports", icon: "📝" },
-  { href: "/admin/teacher-resources", label: "Teacher Resources", icon: "🗄️" },
-  { href: "/admin/feedback", label: "Feedback & Complaints", icon: "📨" },
+  NAV_1_DASHBOARD,
+  NAV_3_TASKS,
+  NAV_4_TASK_REPORT,
+  NAV_5_MY_TASKS,
+  NAV_6_ROUTINE,
+  NAV_LESSON_PLAN_ADMIN,
+  NAV_7_AMALI,
+  NAV_8_SUBMIT_CLASS_TASK,
+  NAV_9_BATCHES,
+  NAV_10_TEACHER_RESOURCES_ADMIN,
+  NAV_12_COURSES,
+  NAV_13_REPORTS,
+  NAV_15_FACULTY,
+  NAV_19_PROFILE,
 ];
 
+// Teachers / Regular Members: only their own working set.
 export const TEACHER_NAV: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: "🏠" },
-  { href: "/routine", label: "Campus Routine", icon: "🗓️" },
-  { href: "/my/tasks", label: "My Tasks", icon: "✅" },
-  { href: "/my/submissions", label: "Submit Class / Task", icon: "📤" },
-  { href: "/my/resources", label: "My Resources", icon: "📁" },
-  { href: "/admin/feedback", label: "Feedback & Complaints", icon: "📨" },
-  { href: "/my/profile", label: "My Profile", icon: "👤" },
+  NAV_1_DASHBOARD,
+  NAV_5_MY_TASKS,
+  NAV_6_ROUTINE,
+  NAV_LESSON_PLAN_TEACHER,
+  NAV_7_AMALI,
+  NAV_8_SUBMIT_CLASS_TASK,
+  NAV_10_TEACHER_RESOURCES_TEACHER,
+  NAV_12_COURSES,
+  NAV_19_PROFILE,
 ];
 
 // Deduped catalog of every known page (by href), used by the Access

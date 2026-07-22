@@ -117,20 +117,23 @@ export function AccessRow({
                 Visible pages
               </p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {ALL_PAGES.map((page) => (
-                  <label
-                    key={page.href}
-                    className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm shadow-sm"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={pages.has(page.href)}
-                      onChange={() => togglePage(page.href)}
-                    />
-                    <span>{page.icon}</span>
-                    {page.label}
-                  </label>
-                ))}
+                {ALL_PAGES.map((page) => {
+                  const Icon = page.icon;
+                  return (
+                    <label
+                      key={page.href}
+                      className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm shadow-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={pages.has(page.href)}
+                        onChange={() => togglePage(page.href)}
+                      />
+                      <Icon size={16} className="shrink-0 text-slate-500" />
+                      {page.label}
+                    </label>
+                  );
+                })}
               </div>
             </div>
           )}

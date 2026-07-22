@@ -211,6 +211,37 @@ export interface CampusRoutine {
   updated_at: string;
 }
 
+/**
+ * Monthly allocation of a batch to a teacher for lesson planning (see
+ * lesson_plan_assignments). Admin/coordinator managed; scopes which batches
+ * appear in a teacher's Weekly Lesson Plan batch dropdown for that month.
+ */
+export interface LessonPlanAssignment {
+  id: string;
+  teacher_id: string;
+  batch_id: string;
+  campus_id: string | null;
+  /** "YYYY-MM" */
+  target_month: string;
+  created_by: string | null;
+  created_at: string;
+}
+
+/** A teacher's weekly teaching agenda for one batch (see lesson_plans). */
+export interface LessonPlan {
+  id: string;
+  teacher_id: string;
+  batch_id: string;
+  campus_id: string | null;
+  /** "YYYY-MM" */
+  target_month: string;
+  /** 1–5 */
+  week_number: number;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
+
 /** A teacher's private uploaded document/asset (see teacher_resources). */
 export interface TeacherResource {
   id: string;
