@@ -2,20 +2,15 @@ import { createClient } from "@/lib/supabase/server";
 import { getContent } from "@/lib/content";
 import { PublicHero } from "@/components/public-hero";
 import { RichText } from "@/components/rich-text";
-import { ProgramsToggle } from "@/components/programs-toggle";
-import type { Course, SyllabusDocument } from "@/lib/types";
+import type { SyllabusDocument } from "@/lib/types";
 
 export default async function AcademicPage() {
   const [ac, supabase] = await Promise.all([getContent("academic"), createClient()]);
-  const [{ data }, { data: syllabusData }] = await Promise.all([
-    supabase.from("courses").select("*").order("abbreviation"),
-    supabase
-      .from("syllabus_documents")
-      .select("*")
-      .not("url", "is", null)
-      .order("sort_order"),
-  ]);
-  const courses = (data ?? []) as Course[];
+  const { data: syllabusData } = await supabase
+    .from("syllabus_documents")
+    .select("*")
+    .not("url", "is", null)
+    .order("sort_order");
   const syllabusDocs = (syllabusData ?? []) as SyllabusDocument[];
 
   return (
@@ -52,7 +47,7 @@ export default async function AcademicPage() {
         </div>
       </section>
 
-      {/* Programs from courses */}
+      {/* Student syllabus library */}
       <section className="bg-white py-16">
         <div className="mx-auto max-w-6xl px-4 lg:px-6">
           <div className="mb-8 flex items-center gap-3">
@@ -61,20 +56,14 @@ export default async function AcademicPage() {
             </span>
             <h2 className="text-2xl font-bold text-slate-900">{ac.programsHeading}</h2>
           </div>
-          <ProgramsToggle courses={courses} />
-        </div>
-      </section>
-
-      {/* Syllabus library */}
-      {syllabusDocs.length > 0 && (
-        <section className="bg-white py-16">
-          <div className="mx-auto max-w-6xl px-4 lg:px-6">
-            <div className="mb-8 flex items-center gap-3">
-              <span className="grid size-9 place-items-center rounded-lg bg-gold-400 text-sm font-bold text-brand-900">
-                📄
-              </span>
-              <h2 className="text-2xl font-bold text-slate-900">সিলেবাস</h2>
-            </div>
+          <div className="mb-6 flex justify-center">
+            <span className="rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white">
+              শিক্ষার্থী সিলেবাস
+            </span>
+          </div>
+          {syllabusDocs.length === 0 ? (
+            <p className="text-center text-slate-400">এখনো কোনো সিলেবাস যুক্ত হয়নি।</p>
+          ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {syllabusDocs.map((doc) => (
                 <a
@@ -89,9 +78,9 @@ export default async function AcademicPage() {
                 </a>
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          )}
+        </div>
+      </section>
 
       {/* Dawah class section */}
       <section className="mx-auto max-w-6xl px-4 py-16 lg:px-6">

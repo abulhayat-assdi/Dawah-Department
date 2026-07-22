@@ -312,8 +312,13 @@ create trigger trg_touch_profiles before update on public.profiles
 
 -- ============================================================================
 -- Convenience view: the course-progress tracker table from the spec.
+-- (drop+create, not "or replace" — later migrations redefine this view with
+-- a different column set, and CREATE OR REPLACE VIEW cannot drop/reorder
+-- columns, so "or replace" here would break re-running schema.sql against a
+-- DB that already has the newer version.)
 -- ============================================================================
-create or replace view public.course_tracker as
+drop view if exists public.course_tracker;
+create view public.course_tracker as
 select
   b.id              as batch_id,
   c.id              as course_id,
