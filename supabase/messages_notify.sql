@@ -1,11 +1,11 @@
 -- ============================================================================
--- ADIMS — Wire new direct messages into the notification bell
+-- ADIMS — Wire new direct messages into the in-app notifications
 --
 -- messages-app.tsx sends DMs directly from the browser (RLS-scoped client),
 -- so it cannot call the service-role lib/notify.ts helper. This trigger does
 -- the equivalent server-side: every new message with a recipient gets a
--- matching row in `notifications`, which components/notification-bell.tsx
--- already polls and renders.
+-- matching row in `notifications`, which components/nav-notifications.ts
+-- already polls and badges onto the sidebar.
 --
 -- Run AFTER messages_dm.sql. Safe to re-run.
 -- ============================================================================

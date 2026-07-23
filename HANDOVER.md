@@ -36,7 +36,7 @@ Open Supabase → **SQL Editor** and run each file from the `supabase/` folder, 
 12. `batch_student_count.sql` — active student count per batch + public read of batches
 13. `notices_public.sql` — coordinators can post notices
 14. `feedback_admin_review.sql` — coordinators can read/mark-read/delete feedback
-15. `messages_notify.sql` — new direct messages raise a notification-bell alert
+15. `messages_notify.sql` — new direct messages raise an in-app notification
 16. `make_super_admin.sql` — promote your account (see step 4)
 17. `notices_campus_scope.sql` — Notice Board is member-only (no public/anon read) and
     campus-scoped (a notice targets one campus or "all campuses"). **Requires**
@@ -85,7 +85,9 @@ npm run start    # serve the production build
   (CMS), Messages, Feedback, Notice Board.
 - **Member (teacher) portal**: Dashboard, My Batches, My Tasks, Amali checklist, Daily Report,
   Messages, My Profile (with photo upload).
-- **Automation**: in-app notifications (bell), evening missed-report reminder (pg_cron),
+- **Automation**: in-app notifications (unread counts badged on the sidebar entry the
+  notification's `link` points at — see `lib/nav.ts` `matchNavHref`; opening the page clears
+  its badge), evening missed-report reminder (pg_cron),
   topic-completion confirmation notifications, velocity-based completion projection.
 
 ## 7. Notes

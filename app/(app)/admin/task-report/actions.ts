@@ -50,7 +50,11 @@ export async function updateSubmission(formData: FormData) {
     patch.verified_count = Math.max(0, Number(formData.get("verified_count") ?? 0));
   }
 
-  await supabase.from("task_submissions").update(patch).eq("id", id);
+  const { error } = await supabase
+    .from("task_submissions")
+    .update(patch)
+    .eq("id", id);
+  if (error) throw new Error(`সাবমিশন আপডেট করা যায়নি: ${error.message}`);
   revalidatePath("/admin/task-report");
   revalidatePath("/my/submissions");
 }
@@ -79,7 +83,11 @@ export async function removeSubmissionFile(formData: FormData) {
     patch.file_name = null;
   }
 
-  await supabase.from("task_submissions").update(patch).eq("id", id);
+  const { error } = await supabase
+    .from("task_submissions")
+    .update(patch)
+    .eq("id", id);
+  if (error) throw new Error(`অ্যাটাচমেন্ট সরানো যায়নি: ${error.message}`);
   await removeObjects(supabase, [url]);
   revalidatePath("/admin/task-report");
   revalidatePath("/my/submissions");
@@ -104,7 +112,11 @@ export async function deleteSubmissionAdmin(formData: FormData) {
     data?.file_url,
   ];
 
-  await supabase.from("task_submissions").delete().eq("id", id);
+  const { error } = await supabase
+    .from("task_submissions")
+    .delete()
+    .eq("id", id);
+  if (error) throw new Error(`সাবমিশন ডিলিট করা যায়নি: ${error.message}`);
   await removeObjects(supabase, urls);
   revalidatePath("/admin/task-report");
   revalidatePath("/my/submissions");

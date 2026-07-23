@@ -9,7 +9,7 @@ import type { Profile } from "@/lib/types";
 import { allRoles } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { NotificationBell } from "@/components/notification-bell";
+import { useNavNotificationCounts } from "@/components/nav-notifications";
 import { HeaderDateTime } from "@/components/datetime";
 import { Avatar } from "@/components/avatar";
 import { RoleBadges } from "@/components/role-badges";
@@ -29,6 +29,8 @@ export function AppShell({
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  // Unread counts per sidebar entry; the page you are on clears its own badge.
+  const counts = useNavNotificationCounts(profile.id, navHrefs, pathname);
 
   async function signOut() {
     const supabase = createClient();
@@ -61,33 +63,48 @@ export function AppShell({
           </div>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 pb-3">
+        <nav className="flex flex-1 flex-col gap-2 overflow-y-auto px-3 pb-3">
           {nav.map((item) => {
             const active =
               pathname === item.href ||
               (item.href !== "/dashboard" && pathname.startsWith(item.href));
             const Icon = item.icon;
+            const count = counts[item.href] ?? 0;
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
+                aria-current={active ? "page" : undefined}
                 className={clsx(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
+                  // The selected entry is a solid emerald pill with a gold
+                  // edge (`before:`), so it reads as selected at a glance.
+                  "relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-3 text-sm font-medium transition",
+                  "before:absolute before:inset-y-0 before:left-0 before:w-1.5 before:transition",
                   active
-                    ? "bg-brand-50 text-brand-700 shadow-[0_0_0_1px_var(--color-brand-200),0_0_16px_var(--color-brand-200)]"
-                    : "text-slate-600 hover:bg-slate-50",
+                    ? "bg-brand-600 font-semibold text-white shadow-[0_8px_18px_-8px_var(--color-brand-700)] before:bg-gold-400"
+                    : "text-slate-600 before:bg-transparent hover:bg-slate-50",
                 )}
               >
                 <span
                   className={clsx(
                     "grid size-8 shrink-0 place-items-center rounded-lg transition",
-                    active ? "bg-brand-100 text-brand-700" : "bg-slate-100 text-slate-500",
+                    active
+                      ? "bg-white/20 text-white"
+                      : "bg-slate-100 text-slate-500",
                   )}
                 >
                   <Icon size={18} strokeWidth={2} />
                 </span>
-                {item.label}
+                <span className="flex-1 truncate">{item.label}</span>
+                {count > 0 && (
+                  <span
+                    aria-label={`${count} new`}
+                    className="grid min-w-[20px] shrink-0 place-items-center rounded-full bg-gold-400 px-1.5 py-0.5 text-[11px] font-bold text-brand-900 shadow-sm"
+                  >
+                    {count > 99 ? "99+" : count}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -133,7 +150,6 @@ export function AppShell({
             <div className="hidden md:block">
               <HeaderDateTime />
             </div>
-            <NotificationBell userId={profile.id} />
             <div className="flex items-center gap-2.5">
               <div className="hidden text-right leading-tight sm:block">
                 <p className="text-sm font-semibold text-slate-900">
