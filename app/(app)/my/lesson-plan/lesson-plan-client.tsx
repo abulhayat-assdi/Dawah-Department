@@ -5,6 +5,7 @@ import { Card, CardHeader, Label, Select, Textarea, Button, EmptyState } from "@
 import { LESSON_PLAN_WEEKS } from "@/lib/constants";
 import type { LessonPlan } from "@/lib/types";
 import { saveLessonPlan, deleteLessonPlan, type LessonPlanFormState } from "./actions";
+import { ConfirmButton } from "@/components/confirm-button";
 
 export interface AssignedBatch {
   id: string;
@@ -173,12 +174,15 @@ export function LessonPlanClient({
                     >
                       Edit
                     </button>
-                    <form action={deleteLessonPlan}>
-                      <input type="hidden" name="id" value={p.id} />
-                      <button className="rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50">
-                        Delete
-                      </button>
-                    </form>
+                    <ConfirmButton
+                      action={deleteLessonPlan}
+                      fields={{ id: p.id }}
+                      triggerClassName="rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50"
+                      title="লেসন প্ল্যানটি ডিলিট করবেন?"
+                      confirmLabel="ডিলিট করুন"
+                    >
+                      Delete
+                    </ConfirmButton>
                   </div>
                 </div>
                 <p className="mt-1.5 whitespace-pre-wrap rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">

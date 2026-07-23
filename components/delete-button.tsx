@@ -1,16 +1,16 @@
 "use client";
 
-import { Button } from "@/components/ui";
+import { ConfirmButton } from "@/components/confirm-button";
 
 /**
- * Delete form with a confirm() guard. Works inside server components because
- * the interactive bits live here in a client component.
+ * Danger button that asks for confirmation in a designed dialog before running
+ * a delete server action. Thin wrapper over {@link ConfirmButton}.
  */
 export function DeleteButton({
   action,
   id,
   label = "Delete",
-  confirmText = "Are you sure? This cannot be undone.",
+  confirmText,
   className,
 }: {
   action: (formData: FormData) => void | Promise<void>;
@@ -20,16 +20,15 @@ export function DeleteButton({
   className?: string;
 }) {
   return (
-    <form
+    <ConfirmButton
       action={action}
-      onSubmit={(e) => {
-        if (!confirm(confirmText)) e.preventDefault();
-      }}
+      fields={{ id }}
+      variant="danger"
+      triggerClassName={className}
+      message={confirmText}
+      confirmLabel="ডিলিট করুন"
     >
-      <input type="hidden" name="id" value={id} />
-      <Button type="submit" variant="danger" className={className}>
-        {label}
-      </Button>
-    </form>
+      {label}
+    </ConfirmButton>
   );
 }

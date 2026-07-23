@@ -44,10 +44,10 @@ export default async function CoursesPage() {
               )}
               <form action={updateSyllabusDocumentFile} className="space-y-2">
                 <input type="hidden" name="id" value={doc.id} />
-                <FileUpload name="file_url" bucket="resources" kind="file" />
-                <Button type="submit" variant="secondary" className="w-full text-sm">
-                  {doc.url ? "Replace PDF" : "Upload PDF"}
-                </Button>
+                <FileUpload name="file_url" bucket="resources" kind="file" autoSubmit />
+                <p className="text-xs text-slate-400">
+                  Selecting a file saves it right away — no extra click needed.
+                </p>
               </form>
               <DeleteButton
                 action={deleteSyllabusDocument}

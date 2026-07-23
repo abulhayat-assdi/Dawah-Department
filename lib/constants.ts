@@ -80,8 +80,8 @@ export const TASK_CLASS_TYPE: Record<
     countLabel: string;
   }
 > = {
-  quran: { label: "Quran Class", text: "text-brand-700", bg: "bg-brand-50", needsCourse: false, needsBatch: true, monthly: true, countLabel: "Classes to be taken this month" },
-  dawah: { label: "Dawah Class", text: "text-blue-700", bg: "bg-blue-50", needsCourse: false, needsBatch: true, monthly: true, countLabel: "Classes to be taken this month" },
+  quran: { label: "Quran Class", text: "text-brand-700", bg: "bg-brand-50", needsCourse: true, needsBatch: true, monthly: true, countLabel: "Classes to be taken this month" },
+  dawah: { label: "Dawah Class", text: "text-blue-700", bg: "bg-blue-50", needsCourse: true, needsBatch: true, monthly: true, countLabel: "Classes to be taken this month" },
   staff: { label: "Staff Class", text: "text-purple-700", bg: "bg-purple-50", needsCourse: false, needsBatch: false, monthly: true, countLabel: "Classes to be taken this month" },
   other: { label: "Other Task", text: "text-slate-700", bg: "bg-slate-100", needsCourse: false, needsBatch: false, monthly: false, countLabel: "" },
   form_verification: { label: "Form Verification", text: "text-emerald-700", bg: "bg-emerald-50", needsCourse: true, needsBatch: true, monthly: true, countLabel: "Number of Forms to Verify" },

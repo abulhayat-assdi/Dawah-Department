@@ -11,6 +11,7 @@ import {
   EmptyState,
 } from "@/components/ui";
 import { toggleAmaliItem, deleteAmaliItem } from "./actions";
+import { ConfirmButton } from "@/components/confirm-button";
 import { AmaliFormModal } from "./amali-form-modal";
 import { getAmaliMonthlyHistory, getAmaliMonthlyHistoryAll } from "@/lib/amali-data";
 import { formatDate } from "@/lib/utils";
@@ -215,12 +216,17 @@ function AmaliList({
                 {it.is_active ? "নিষ্ক্রিয়" : "সক্রিয়"}
               </Button>
             </form>
-            <form action={deleteAmaliItem}>
-              <input type="hidden" name="id" value={it.id} />
-              <Button variant="ghost" className="text-xs text-red-600">
-                মুছুন
-              </Button>
-            </form>
+            <ConfirmButton
+              action={deleteAmaliItem}
+              fields={{ id: it.id }}
+              variant="ghost"
+              triggerClassName="text-xs text-red-600"
+              title="আমলটি ডিলিট করবেন?"
+              message={`"${it.title}" আমলটি মুছে ফেলা হবে।`}
+              confirmLabel="মুছে ফেলুন"
+            >
+              মুছুন
+            </ConfirmButton>
           </div>
         </li>
       ))}

@@ -19,6 +19,7 @@ export function FileUpload({
   label,
   maxSizeMB,
   onChange,
+  autoSubmit,
 }: {
   name?: string;
   /** When set, the original file name is written to a hidden input of this name. */
@@ -30,12 +31,17 @@ export function FileUpload({
   /** Client-side size cap in MB; rejects larger files before uploading. */
   maxSizeMB?: number;
   onChange?: (url: string) => void;
+  /** Submits the enclosing form as soon as the upload finishes, so a lone
+   * file field doesn't need a separate "save" click the user can forget. */
+  autoSubmit?: boolean;
 }) {
   const [url, setUrl] = useState<string>(defaultUrl ?? "");
   const [fileName, setFileName] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const urlFieldRef = useRef<HTMLInputElement>(null);
+  const nameFieldRef = useRef<HTMLInputElement>(null);
 
   async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -58,6 +64,13 @@ export function FileUpload({
       setUrl(data.publicUrl);
       setFileName(file.name);
       onChange?.(data.publicUrl);
+      if (autoSubmit) {
+        // Write straight to the DOM so the submit below reads the fresh
+        // value immediately, instead of waiting on a React re-render.
+        if (urlFieldRef.current) urlFieldRef.current.value = data.publicUrl;
+        if (nameFieldRef.current) nameFieldRef.current.value = file.name;
+        inputRef.current?.form?.requestSubmit();
+      }
     } catch {
       setError("Upload failed. Try again.");
     } finally {
@@ -70,8 +83,10 @@ export function FileUpload({
       {label && (
         <p className="mb-1.5 block text-sm font-medium text-slate-700">{label}</p>
       )}
-      {name && <input type="hidden" name={name} value={url} />}
-      {nameField && <input type="hidden" name={nameField} value={fileName} />}
+      {name && <input ref={urlFieldRef} type="hidden" name={name} value={url} readOnly />}
+      {nameField && (
+        <input ref={nameFieldRef} type="hidden" name={nameField} value={fileName} readOnly />
+      )}
       <div className="flex items-center gap-3">
         {kind === "image" ? (
           <Avatar photoUrl={url} size={56} />

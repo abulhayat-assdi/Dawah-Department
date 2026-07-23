@@ -173,6 +173,12 @@ export interface Task {
   target_month: string | null;
 }
 
+/** One attachment on a submission: a public URL + its display name. */
+export interface SubmissionFile {
+  url: string;
+  name: string;
+}
+
 /** A teacher-submitted class update or completed task (see task_submissions). */
 export interface TaskSubmission {
   id: string;
@@ -195,6 +201,8 @@ export interface TaskSubmission {
   verified_count: number;
   file_url: string | null;
   file_name: string | null;
+  /** Additional attachments (Other Task). Empty for legacy/single-file rows. */
+  files: SubmissionFile[];
   created_at: string;
 }
 

@@ -2,7 +2,7 @@ import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardHeader, PageHeader, EmptyState } from "@/components/ui";
 import { TASK_CLASS_TYPE } from "@/lib/constants";
-import { formatDate, formatMonth } from "@/lib/utils";
+import { formatDate, formatMonth, submissionFiles } from "@/lib/utils";
 import {
   SubmissionForm,
   type AllocatedBatch,
@@ -10,6 +10,7 @@ import {
   type SubCourseOption,
 } from "./submission-form";
 import { deleteSubmission } from "./actions";
+import { ConfirmButton } from "@/components/confirm-button";
 import type {
   Task,
   TaskSubmission,
@@ -174,16 +175,17 @@ export default async function MySubmissionsPage() {
                     {s.class_type === "form_verification" && (
                       <span>✅ {s.verified_count} forms verified</span>
                     )}
-                    {s.file_url && (
+                    {submissionFiles(s).map((f, i) => (
                       <a
-                        href={s.file_url}
+                        key={`${f.url}-${i}`}
+                        href={f.url}
                         target="_blank"
                         rel="noreferrer"
                         className="font-medium text-brand-600 hover:underline"
                       >
-                        📎 {s.file_name || "Attachment"}
+                        📎 {f.name}
                       </a>
-                    )}
+                    ))}
                   </div>
                   {s.comments && (
                     <p className="mt-1.5 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
@@ -191,12 +193,17 @@ export default async function MySubmissionsPage() {
                     </p>
                   )}
 
-                  <form action={deleteSubmission} className="mt-2">
-                    <input type="hidden" name="id" value={s.id} />
-                    <button className="rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50">
+                  <div className="mt-2">
+                    <ConfirmButton
+                      action={deleteSubmission}
+                      fields={{ id: s.id }}
+                      triggerClassName="rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50"
+                      title="সাবমিশনটি ডিলিট করবেন?"
+                      confirmLabel="ডিলিট করুন"
+                    >
                       Delete
-                    </button>
-                  </form>
+                    </ConfirmButton>
+                  </div>
                 </li>
               );
             })}

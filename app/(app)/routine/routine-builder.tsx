@@ -6,6 +6,7 @@ import { DAYS_OF_WEEK, ROUTINE_CLASS_TYPE } from "@/lib/constants";
 import { toTimeInput } from "@/lib/utils";
 import type { CampusRoutine, RoutineClassType } from "@/lib/types";
 import { saveRoutine, deleteRoutine, type RoutineFormState } from "./actions";
+import { ConfirmButton } from "@/components/confirm-button";
 import type { CampusOpt, RoutineBatch } from "./routine-viewer";
 
 export function RoutineBuilder({
@@ -186,15 +187,16 @@ export function RoutineBuilder({
         <Button type="submit" disabled={!batchId}>
           {isUpdate ? "Update Routine" : "Save Routine"}
         </Button>
-        {isUpdate && (
-          <Button
-            type="submit"
+        {isUpdate && existing && (
+          <ConfirmButton
+            action={deleteRoutine}
+            fields={{ id: existing.id }}
             variant="danger"
-            formAction={deleteRoutine}
-            formNoValidate
+            title="রুটিনটি ডিলিট করবেন?"
+            confirmLabel="ডিলিট করুন"
           >
             Delete Routine
-          </Button>
+          </ConfirmButton>
         )}
       </div>
     </form>

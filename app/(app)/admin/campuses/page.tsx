@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { FileUpload } from "@/components/file-upload";
 import { createCampus, deleteCampus } from "./actions";
+import { ConfirmButton } from "@/components/confirm-button";
 import type { Campus } from "@/lib/types";
 
 export default async function CampusesPage() {
@@ -51,12 +52,17 @@ export default async function CampusesPage() {
                       {c.address || "No address added"}
                     </p>
                   </Link>
-                  <form action={deleteCampus}>
-                    <input type="hidden" name="id" value={c.id} />
-                    <Button variant="ghost" className="text-red-600">
-                      Delete
-                    </Button>
-                  </form>
+                  <ConfirmButton
+                    action={deleteCampus}
+                    fields={{ id: c.id }}
+                    variant="ghost"
+                    triggerClassName="text-red-600"
+                    title="ক্যাম্পাসটি ডিলিট করবেন?"
+                    message={`"${c.name}" ক্যাম্পাসটি মুছে ফেলা হবে। এটি আর ফিরিয়ে আনা যাবে না।`}
+                    confirmLabel="ডিলিট করুন"
+                  >
+                    Delete
+                  </ConfirmButton>
                 </li>
               ))}
             </ul>

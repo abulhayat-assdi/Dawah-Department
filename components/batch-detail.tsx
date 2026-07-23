@@ -22,6 +22,7 @@ import {
 import { deleteBatch } from "@/app/(app)/admin/batches/actions";
 import { addTopic, deleteTopic } from "@/app/(app)/admin/courses/actions";
 import { DeleteButton } from "@/components/delete-button";
+import { ConfirmButton } from "@/components/confirm-button";
 import { DailySchedule } from "@/components/daily-schedule";
 import type { Batch, ClassScheduleEntry } from "@/lib/types";
 
@@ -465,14 +466,21 @@ export function BatchDetail({
                           {t.title}
                         </p>
                       </div>
-                      <form action={deleteTopic}>
-                        <input type="hidden" name="id" value={t.id} />
-                        <input type="hidden" name="course_id" value={courseId} />
-                        <input type="hidden" name="batch_id" value={batch.id} />
-                        <Button variant="ghost" className="text-xs text-red-600">
-                          Delete
-                        </Button>
-                      </form>
+                      <ConfirmButton
+                        action={deleteTopic}
+                        fields={{
+                          id: t.id,
+                          course_id: courseId,
+                          batch_id: batch.id,
+                        }}
+                        variant="ghost"
+                        triggerClassName="text-xs text-red-600"
+                        title="টপিকটি ডিলিট করবেন?"
+                        message={`"${t.title}" টপিকটি মুছে ফেলা হবে।`}
+                        confirmLabel="ডিলিট করুন"
+                      >
+                        Delete
+                      </ConfirmButton>
                     </li>
                   ))}
                 </ol>

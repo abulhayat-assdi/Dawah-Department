@@ -27,6 +27,22 @@ export async function createSubmission(formData: FormData) {
   const courseId = String(formData.get("course_id") ?? "") || null;
   const campusId = String(formData.get("campus_id") ?? "") || null;
 
+  // Multiple attachments (Other Task) arrive as a JSON array of { url, name }.
+  let files: { url: string; name: string }[] = [];
+  try {
+    const raw = String(formData.get("files") ?? "");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        files = parsed
+          .filter((f) => f && typeof f.url === "string")
+          .map((f) => ({ url: String(f.url), name: String(f.name ?? "File") }));
+      }
+    }
+  } catch {
+    files = [];
+  }
+
   // Attribute to a monthly allocation unless this is an additional class.
   let taskId: string | null = null;
   let resolvedCampus = campusId;
@@ -67,6 +83,7 @@ export async function createSubmission(formData: FormData) {
         : 0,
     file_url: String(formData.get("file_url") ?? "") || null,
     file_name: String(formData.get("file_name") ?? "") || null,
+    files,
   });
 
   revalidatePath("/my/submissions");

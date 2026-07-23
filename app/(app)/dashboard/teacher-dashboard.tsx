@@ -4,7 +4,6 @@ import {
   CardHeader,
   StatCard,
   EmptyState,
-  TaskStatusBadge,
   Button,
   ProgressBar,
 } from "@/components/ui";
@@ -129,19 +128,13 @@ export function TeacherDashboard({
         ) : (
           <ul className="divide-y divide-slate-50">
             {tasks.map((t) => (
-              <li
-                key={t.id}
-                className="flex items-center justify-between px-5 py-3.5"
-              >
-                <div>
-                  <p className="font-medium text-slate-800">{t.title}</p>
-                  {t.due_date && (
-                    <p className="text-xs text-slate-400">
-                      Due: {formatDate(t.due_date)}
-                    </p>
-                  )}
-                </div>
-                <TaskStatusBadge status={t.status} />
+              <li key={t.id} className="px-5 py-3.5">
+                <p className="font-medium text-slate-800">{t.title}</p>
+                {t.due_date && (
+                  <p className="text-xs text-slate-400">
+                    Due: {formatDate(t.due_date)}
+                  </p>
+                )}
               </li>
             ))}
           </ul>

@@ -123,10 +123,15 @@ export default async function DashboardPage() {
     batchIds.length
       ? supabase.from("course_tracker").select("*").in("batch_id", batchIds)
       : Promise.resolve({ data: [] }),
+    // Monthly quota allocations (quran/dawah/staff/form_verification) never
+    // get a status update anymore — their progress is tracked via Task
+    // Report's target-vs-taken counts instead — so this widget only tracks
+    // plain "Other Task" items, which still have a real todo/done lifecycle.
     supabase
       .from("tasks")
       .select("*")
       .eq("assigned_to", profile.id)
+      .or("class_type.eq.other,class_type.is.null")
       .neq("status", "done")
       .order("due_date", { nullsFirst: false }),
     noticesQuery,

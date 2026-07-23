@@ -1,4 +1,4 @@
-import { requireCoordinatorOrAdmin } from "@/lib/auth";
+import { requireCoordinatorOrAdmin, allRoles } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
   Card,
@@ -8,10 +8,10 @@ import {
   EmptyState,
   Select,
   Button,
-  TaskStatusBadge,
 } from "@/components/ui";
 import { TASK_CLASS_TYPE } from "@/lib/constants";
-import { formatDate, formatMonth } from "@/lib/utils";
+import { formatDate, formatMonth, monthOptions, submissionFiles } from "@/lib/utils";
+import { SubmissionAdminCard } from "./submission-card";
 import type {
   Profile,
   Task,
@@ -34,6 +34,8 @@ export default async function TaskReportPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const profile = await requireCoordinatorOrAdmin();
+  // Only super admins may edit/delete submissions & their attachments.
+  const canManage = allRoles(profile).includes("super_admin");
   const supabase = await createClient();
   const sp = await searchParams;
   const teacherId = String(sp.teacher ?? "");
@@ -42,12 +44,32 @@ export default async function TaskReportPage({
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const month = String(sp.month ?? currentMonth);
 
-  // Month options: current month and the previous 11.
-  const months = Array.from({ length: 12 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    return { value, label: formatMonth(value) };
-  });
+  // Month options: previous months that hold data → current month → next 2
+  // months, matching the Task Management dropdown (shared `monthOptions`). The
+  // earliest `target_month` across allocations & submissions is the start.
+  const [{ data: firstTask }, { data: firstSub }] = await Promise.all([
+    supabase
+      .from("tasks")
+      .select("target_month")
+      .not("target_month", "is", null)
+      .order("target_month", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("task_submissions")
+      .select("target_month")
+      .not("target_month", "is", null)
+      .order("target_month", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+  const startMonth = [
+    firstTask?.target_month as string | undefined,
+    firstSub?.target_month as string | undefined,
+  ]
+    .filter(Boolean)
+    .sort()[0];
+  const months = monthOptions(startMonth, 2);
 
   // Coordinators may only report on teachers within their own campus(es).
   let campusIds: string[] | null = null;
@@ -70,10 +92,23 @@ export default async function TaskReportPage({
     ? new Set((teacherLinks ?? []).map((r) => r.teacher_id as string))
     : null;
 
+  // "Teacher" may be a profile's primary role OR an Access-Management grant
+  // (e.g. a super_admin who also teaches), so gather ids from both sources.
+  const { data: extraTeacherRows } = await supabase
+    .from("profile_roles")
+    .select("profile_id")
+    .eq("role", "teacher");
+  const extraTeacherIds = (extraTeacherRows ?? []).map(
+    (r) => r.profile_id as string,
+  );
+
+  const teacherFilter = extraTeacherIds.length
+    ? `role.eq.teacher,id.in.(${extraTeacherIds.join(",")})`
+    : "role.eq.teacher";
   const { data: teacherData } = await supabase
     .from("profiles")
     .select("id, full_name")
-    .eq("role", "teacher")
+    .or(teacherFilter)
     .order("full_name");
   const allTeachers = (teacherData ?? []) as Pick<Profile, "id" | "full_name">[];
   const teachers = scopedTeacherIds
@@ -152,7 +187,11 @@ export default async function TaskReportPage({
     return { type, target, done, additional, pct };
   });
 
-  const filesSubs = submissions.filter((s) => s.file_url);
+  // Submissions the super-admin can manage in the panel below: anything with an
+  // attachment, plus every Other-Task submission (which carries free text).
+  const manageSubs = submissions.filter(
+    (s) => submissionFiles(s).length > 0 || s.class_type === "other",
+  );
 
   return (
     <div className="space-y-6">
@@ -259,19 +298,13 @@ export default async function TaskReportPage({
             ) : (
               <ul className="divide-y divide-slate-100">
                 {otherTasks.map((t) => (
-                  <li
-                    key={t.id}
-                    className="flex flex-wrap items-center justify-between gap-2 px-5 py-3"
-                  >
-                    <div>
-                      <p className="font-medium text-slate-800">{t.title}</p>
-                      {t.due_date && (
-                        <p className="text-xs text-slate-400">
-                          Due {formatDate(t.due_date)}
-                        </p>
-                      )}
-                    </div>
-                    <TaskStatusBadge status={t.status} />
+                  <li key={t.id} className="px-5 py-3">
+                    <p className="font-medium text-slate-800">{t.title}</p>
+                    {t.due_date && (
+                      <p className="text-xs text-slate-400">
+                        Due {formatDate(t.due_date)}
+                      </p>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -280,39 +313,38 @@ export default async function TaskReportPage({
 
           <Card>
             <CardHeader
-              title="Submitted Files"
-              subtitle={`${filesSubs.length} attachment(s)`}
+              title="Submissions & Attachments"
+              subtitle={`${manageSubs.length} submission(s)`}
             />
-            {filesSubs.length === 0 ? (
-              <EmptyState icon="📎" title="No files submitted this month" />
+            {manageSubs.length === 0 ? (
+              <EmptyState icon="📎" title="No submissions to show this month" />
             ) : (
               <ul className="divide-y divide-slate-100">
-                {filesSubs.map((s) => (
-                  <li
-                    key={s.id}
-                    className="flex flex-wrap items-center justify-between gap-2 px-5 py-3"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${TASK_CLASS_TYPE[s.class_type].bg} ${TASK_CLASS_TYPE[s.class_type].text}`}
-                      >
-                        {TASK_CLASS_TYPE[s.class_type].label}
-                      </span>
-                      <span className="text-sm text-slate-600">
-                        {batchLabel(s.batch_id) ?? formatDate(s.submission_date)}
-                      </span>
-                    </div>
-                    <a
-                      href={s.file_url as string}
-                      target="_blank"
-                      rel="noreferrer"
-                      download
-                      className="text-sm font-medium text-brand-600 hover:underline"
-                    >
-                      ⬇ {s.file_name || "Download"}
-                    </a>
-                  </li>
-                ))}
+                {manageSubs.map((s) => {
+                  const ct = TASK_CLASS_TYPE[s.class_type];
+                  return (
+                    <SubmissionAdminCard
+                      key={s.id}
+                      canManage={canManage}
+                      data={{
+                        id: s.id,
+                        typeLabel: ct.label,
+                        typeBg: ct.bg,
+                        typeText: ct.text,
+                        heading:
+                          batchLabel(s.batch_id) ??
+                          (s.class_type === "other" ? "Other Task" : ct.label),
+                        submissionDate: s.submission_date,
+                        topic: s.topic,
+                        comments: s.comments,
+                        isForm: s.class_type === "form_verification",
+                        verifiedCount: s.verified_count,
+                        isAdditional: s.is_additional,
+                        files: submissionFiles(s),
+                      }}
+                    />
+                  );
+                })}
               </ul>
             )}
           </Card>

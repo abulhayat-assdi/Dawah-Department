@@ -64,18 +64,38 @@ export default async function AcademicPage() {
           {syllabusDocs.length === 0 ? (
             <p className="text-center text-slate-400">এখনো কোনো সিলেবাস যুক্ত হয়নি।</p>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {syllabusDocs.map((doc) => (
-                <a
+                <div
                   key={doc.id}
-                  href={doc.url!}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md"
+                  className="flex aspect-square flex-col items-center rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <span className="text-xl">📎</span>
-                  {doc.title}
-                </a>
+                  <div className="flex flex-1 flex-col items-center justify-center gap-3">
+                    <span className="grid size-14 place-items-center rounded-xl bg-brand-50 text-2xl">
+                      📄
+                    </span>
+                    <p className="line-clamp-3 text-sm font-semibold text-slate-800">
+                      {doc.title}
+                    </p>
+                  </div>
+                  <div className="grid w-full grid-cols-2 gap-2">
+                    <a
+                      href={doc.url!}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-lg bg-brand-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-brand-800"
+                    >
+                      View
+                    </a>
+                    <a
+                      href={doc.url!}
+                      download
+                      className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Download
+                    </a>
+                  </div>
+                </div>
               ))}
             </div>
           )}

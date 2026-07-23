@@ -7,6 +7,7 @@ import { formatDate } from "@/lib/utils";
 import type { TeacherResource } from "@/lib/types";
 import { ResourceDropzone } from "./resource-dropzone";
 import { updateTeacherResource, deleteTeacherResource } from "./actions";
+import { ConfirmButton } from "@/components/confirm-button";
 
 export interface CampusOption {
   id: string;
@@ -136,15 +137,16 @@ export function ResourceItem({
         >
           Edit
         </button>
-        <form action={deleteTeacherResource}>
-          <input type="hidden" name="id" value={resource.id} />
-          <button
-            type="submit"
-            className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
-          >
-            Delete
-          </button>
-        </form>
+        <ConfirmButton
+          action={deleteTeacherResource}
+          fields={{ id: resource.id }}
+          triggerClassName="rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
+          title="রিসোর্সটি ডিলিট করবেন?"
+          message={`"${resource.name}" রিসোর্সটি মুছে ফেলা হবে।`}
+          confirmLabel="ডিলিট করুন"
+        >
+          Delete
+        </ConfirmButton>
       </div>
     </li>
   );

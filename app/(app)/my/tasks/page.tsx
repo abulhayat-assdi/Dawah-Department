@@ -5,18 +5,10 @@ import {
   CardHeader,
   PageHeader,
   EmptyState,
-  TaskStatusBadge,
 } from "@/components/ui";
-import {
-  TASK_STATUS,
-  TASK_CLASS_TYPE,
-  PRIORITY_LABEL,
-} from "@/lib/constants";
+import { TASK_CLASS_TYPE, PRIORITY_LABEL } from "@/lib/constants";
 import { formatDate, formatMonth } from "@/lib/utils";
-import { updateTaskStatus } from "@/app/(app)/admin/tasks/actions";
-import type { Task, TaskStatus, Campus, CourseTrackerRow } from "@/lib/types";
-
-const NEXT: TaskStatus[] = ["todo", "doing", "done"];
+import type { Task, Campus, CourseTrackerRow } from "@/lib/types";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -78,24 +70,21 @@ export default async function MyTasksPage() {
               const monthly = ct?.monthly ?? false;
               return (
                 <li key={t.id} className="px-5 py-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-medium text-slate-800">{t.title}</p>
-                      {ct && (
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${ct.bg} ${ct.text}`}
-                        >
-                          {ct.label}
-                        </span>
-                      )}
-                      {/* Priority indicator only matters for plain tasks. */}
-                      {!monthly && t.priority === 1 && (
-                        <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600">
-                          {PRIORITY_LABEL[1]}
-                        </span>
-                      )}
-                    </div>
-                    <TaskStatusBadge status={t.status} />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-medium text-slate-800">{t.title}</p>
+                    {ct && (
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${ct.bg} ${ct.text}`}
+                      >
+                        {ct.label}
+                      </span>
+                    )}
+                    {/* Priority indicator only matters for plain tasks. */}
+                    {!monthly && t.priority === 1 && (
+                      <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600">
+                        {PRIORITY_LABEL[1]}
+                      </span>
+                    )}
                   </div>
 
                   <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
@@ -120,9 +109,14 @@ export default async function MyTasksPage() {
                       </>
                     ) : (
                       <>
-                        <Field label="Campus">{campusName(t.campus_id) ?? "—"}</Field>
                         <Field label="Due Date">
-                          {t.due_date ? formatDate(t.due_date) : "—"}
+                          {t.due_date ? (
+                            <span className="font-bold text-amber-600">
+                              {formatDate(t.due_date)}
+                            </span>
+                          ) : (
+                            "—"
+                          )}
                         </Field>
                         <Field label="Priority">
                           <span
@@ -144,21 +138,6 @@ export default async function MyTasksPage() {
                       {t.description}
                     </p>
                   )}
-
-                  <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                    <span className="mr-1 text-xs font-medium text-slate-400">
-                      Update status:
-                    </span>
-                    {NEXT.filter((c) => c !== t.status).map((c) => (
-                      <form key={c} action={updateTaskStatus}>
-                        <input type="hidden" name="id" value={t.id} />
-                        <input type="hidden" name="status" value={c} />
-                        <button className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200">
-                          → {TASK_STATUS[c].label}
-                        </button>
-                      </form>
-                    ))}
-                  </div>
                 </li>
               );
             })}

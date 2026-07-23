@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Label, Input, Textarea, Select, Button } from "@/components/ui";
 import { FileUpload } from "@/components/file-upload";
+import { MultiFileUpload } from "@/components/multi-file-upload";
 import { TASK_CLASS_TYPE } from "@/lib/constants";
 import type { TaskClassType } from "@/lib/types";
 import { createSubmission } from "./actions";
@@ -378,13 +379,11 @@ export function SubmissionForm({
             <Textarea id="comments" name="comments" className="min-h-16" />
           </div>
           <div className="md:col-span-2">
-            <FileUpload
-              name="file_url"
-              nameField="file_name"
+            <MultiFileUpload
+              name="files"
               bucket="task-files"
-              kind="file"
               maxSizeMB={100}
-              label="Attachment (optional, up to 100 MB)"
+              label="Attachments (optional, up to 100 MB each)"
             />
           </div>
         </>

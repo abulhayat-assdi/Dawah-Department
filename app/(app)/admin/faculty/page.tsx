@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardHeader, PageHeader, EmptyState, Button } from "@/components/ui";
+import { Card, CardHeader, PageHeader, EmptyState } from "@/components/ui";
 import { Avatar } from "@/components/avatar";
 import { FacultyForm } from "./faculty-form";
 import { createFaculty, deleteFaculty } from "./actions";
+import { ConfirmButton } from "@/components/confirm-button";
 import type { Faculty } from "@/lib/types";
 
 export default async function AdminFacultyPage() {
@@ -57,12 +58,16 @@ export default async function AdminFacultyPage() {
                     >
                       Edit
                     </Link>
-                    <form action={deleteFaculty}>
-                      <input type="hidden" name="id" value={m.id} />
-                      <Button variant="ghost" className="text-xs text-red-600">
-                        Delete
-                      </Button>
-                    </form>
+                    <ConfirmButton
+                      action={deleteFaculty}
+                      fields={{ id: m.id }}
+                      variant="ghost"
+                      triggerClassName="text-xs text-red-600"
+                      title="ফ্যাকাল্টি মেম্বারটি ডিলিট করবেন?"
+                      confirmLabel="ডিলিট করুন"
+                    >
+                      Delete
+                    </ConfirmButton>
                   </div>
                 </li>
               ))}

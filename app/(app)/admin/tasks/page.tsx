@@ -1,13 +1,10 @@
-import { requireCoordinatorOrAdmin } from "@/lib/auth";
+import { requireCoordinatorOrAdmin, allRoles } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardHeader, PageHeader } from "@/components/ui";
-import {
-  PRIORITY_LABEL,
-  TASK_STATUS,
-  TASK_CLASS_TYPE,
-} from "@/lib/constants";
-import { formatDate, formatMonth } from "@/lib/utils";
-import { updateTaskStatus, deleteTask } from "./actions";
+import { Card, CardHeader, PageHeader, EmptyState } from "@/components/ui";
+import { PRIORITY_LABEL, TASK_CLASS_TYPE } from "@/lib/constants";
+import { formatDate, formatMonth, monthOptions } from "@/lib/utils";
+import { deleteTask } from "./actions";
+import { ConfirmButton } from "@/components/confirm-button";
 import {
   TaskForm,
   type BatchOption,
@@ -19,14 +16,12 @@ import type {
   Course,
   Profile,
   Task,
-  TaskStatus,
   CourseTrackerRow,
 } from "@/lib/types";
 
-const COLUMNS: TaskStatus[] = ["todo", "doing", "done"];
-
 export default async function TasksPage() {
   const profile = await requireCoordinatorOrAdmin();
+  const isSuperAdmin = allRoles(profile).includes("super_admin");
   const supabase = await createClient();
 
   // A coordinator may only assign tasks to teachers/campuses within their
@@ -48,7 +43,13 @@ export default async function TasksPage() {
     { data: batchData },
     { data: courseData },
   ] = await Promise.all([
-    supabase.from("tasks").select("*").order("created_at", { ascending: false }),
+    isSuperAdmin
+      ? supabase.from("tasks").select("*").order("created_at", { ascending: false })
+      : supabase
+          .from("tasks")
+          .select("*")
+          .eq("assigned_by", profile.id)
+          .order("created_at", { ascending: false }),
     campusIds
       ? campusIds.length
         ? supabase.from("campuses").select("*").in("id", campusIds).order("name")
@@ -62,13 +63,13 @@ export default async function TasksPage() {
       ? campusIds.length
         ? supabase
             .from("course_tracker")
-            .select("batch_id, course_id, campus_id, course_info, batch_no")
+            .select("batch_id, course_id, campus_id, campus_name, course_info, batch_no")
             .in("campus_id", campusIds)
             .order("batch_no")
         : Promise.resolve({ data: [] as Partial<CourseTrackerRow>[] })
       : supabase
           .from("course_tracker")
-          .select("batch_id, course_id, campus_id, course_info, batch_no")
+          .select("batch_id, course_id, campus_id, campus_name, course_info, batch_no")
           .order("batch_no"),
     campusIds
       ? campusIds.length
@@ -93,11 +94,12 @@ export default async function TasksPage() {
   const batches: BatchOption[] = (
     (batchData ?? []) as Pick<
       CourseTrackerRow,
-      "batch_id" | "course_id" | "campus_id" | "course_info" | "batch_no"
+      "batch_id" | "course_id" | "campus_id" | "campus_name" | "course_info" | "batch_no"
     >[]
   ).map((b) => ({
     id: b.batch_id,
     campus_id: b.campus_id ?? null,
+    campus_name: b.campus_name ?? null,
     course_id: b.course_id ?? null,
     label: `${b.course_info} — Batch ${b.batch_no}`,
   }));
@@ -108,14 +110,20 @@ export default async function TasksPage() {
     label: `${c.abbreviation} — ${c.name}`,
   }));
 
-  // Month/year options: the current month plus the next 11, generated on the
-  // server so admin and teacher views stay in sync (no hydration drift).
-  const now = new Date();
-  const months: MonthOption[] = Array.from({ length: 12 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    return { value, label: formatMonth(value) };
-  });
+  // Month/year options: previous months that already hold task data, the
+  // current (running) month, and the next 2 months for assigning ahead —
+  // generated on the server so views stay in sync (no hydration drift).
+  const { data: firstTask } = await supabase
+    .from("tasks")
+    .select("target_month")
+    .not("target_month", "is", null)
+    .order("target_month", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  const months: MonthOption[] = monthOptions(
+    firstTask?.target_month as string | undefined,
+    2,
+  );
 
   const name = (id: string | null) =>
     assignees.find((t) => t.id === id)?.full_name ?? "Unassigned";
@@ -135,7 +143,6 @@ export default async function TasksPage() {
         <CardHeader title="Assign a New Task" />
         <TaskForm
           assignees={assignees}
-          campuses={campuses}
           batches={batches}
           courses={courses}
           months={months}
@@ -143,97 +150,71 @@ export default async function TasksPage() {
         />
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        {COLUMNS.map((col) => {
-          const items = tasks.filter((t) => t.status === col);
-          return (
-            <Card key={col}>
-              <CardHeader
-                title={TASK_STATUS[col].label}
-                subtitle={`${items.length} item(s)`}
-              />
-              <div className="space-y-3 p-4">
-                {items.length === 0 && (
-                  <p className="py-6 text-center text-sm text-slate-400">
-                    Nothing here
-                  </p>
-                )}
-                {items.map((t) => {
-                  const ct = t.class_type ? TASK_CLASS_TYPE[t.class_type] : null;
-                  return (
-                    <div
-                      key={t.id}
-                      className="rounded-xl border border-slate-200 bg-white p-3"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="font-medium text-slate-800">{t.title}</p>
-                        {t.priority === 1 && (
-                          <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600">
-                            {PRIORITY_LABEL[1]}
-                          </span>
-                        )}
-                      </div>
-                      {(ct || t.target_count > 0) && (
-                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                          {ct && (
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${ct.bg} ${ct.text}`}
-                            >
-                              {ct.label}
-                            </span>
-                          )}
-                          {t.target_count > 0 && (
-                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                              Target: {t.target_count}
-                            </span>
-                          )}
-                        </div>
+      <Card>
+        <CardHeader
+          title="Assigned Tasks"
+          subtitle={
+            isSuperAdmin
+              ? `${tasks.length} total`
+              : `${tasks.length} created by you`
+          }
+        />
+        {tasks.length === 0 ? (
+          <EmptyState icon="🗂️" title="No tasks assigned yet" />
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {tasks.map((t) => {
+              const ct = t.class_type ? TASK_CLASS_TYPE[t.class_type] : null;
+              return (
+                <li key={t.id} className="px-5 py-3.5">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-medium text-slate-800">{t.title}</p>
+                      {ct && (
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${ct.bg} ${ct.text}`}
+                        >
+                          {ct.label}
+                        </span>
                       )}
-                      {t.description && (
-                        <p className="mt-1 text-sm text-slate-500">{t.description}</p>
+                      {t.priority === 1 && (
+                        <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600">
+                          {PRIORITY_LABEL[1]}
+                        </span>
                       )}
-                      {(batchLabel(t.batch_id) ||
-                        campusName(t.campus_id) ||
-                        t.target_month) && (
-                        <p className="mt-1.5 text-xs text-slate-400">
-                          {[
-                            batchLabel(t.batch_id),
-                            campusName(t.campus_id),
-                            t.target_month ? formatMonth(t.target_month) : null,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </p>
+                      {t.target_count > 0 && (
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                          Target: {t.target_count}
+                        </span>
                       )}
-                      <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
-                        <span>👤 {name(t.assigned_to)}</span>
-                        {t.due_date && <span>📅 {formatDate(t.due_date)}</span>}
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {COLUMNS.filter((c) => c !== col).map((c) => (
-                          <form key={c} action={updateTaskStatus}>
-                            <input type="hidden" name="id" value={t.id} />
-                            <input type="hidden" name="status" value={c} />
-                            <button className="rounded-lg bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200">
-                              → {TASK_STATUS[c].label}
-                            </button>
-                          </form>
-                        ))}
-                        <form action={deleteTask}>
-                          <input type="hidden" name="id" value={t.id} />
-                          <button className="rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50">
-                            Delete
-                          </button>
-                        </form>
-                      </div>
                     </div>
-                  );
-                })}
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+                    <ConfirmButton
+                      action={deleteTask}
+                      fields={{ id: t.id }}
+                      triggerClassName="rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50"
+                      title="টাস্কটি ডিলিট করবেন?"
+                      message={`"${t.title}" টাস্কটি মুছে ফেলা হবে। এটি আর ফিরিয়ে আনা যাবে না।`}
+                      confirmLabel="ডিলিট করুন"
+                    >
+                      Delete
+                    </ConfirmButton>
+                  </div>
+                  {t.description && (
+                    <p className="mt-1 text-sm text-slate-500">{t.description}</p>
+                  )}
+                  <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
+                    <span>👤 {name(t.assigned_to)}</span>
+                    {batchLabel(t.batch_id) && <span>{batchLabel(t.batch_id)}</span>}
+                    {campusName(t.campus_id) && <span>{campusName(t.campus_id)}</span>}
+                    {t.target_month && <span>{formatMonth(t.target_month)}</span>}
+                    {t.due_date && <span>📅 {formatDate(t.due_date)}</span>}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Card>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button, Input, Textarea, Label, Select } from "@/components/ui";
 import { formatDate } from "@/lib/utils";
 import { createNotice, updateNotice, deleteNotice } from "@/app/(app)/_actions/notices";
+import { ConfirmButton } from "@/components/confirm-button";
 import type { Notice } from "@/lib/types";
 
 export function NoticeBoard({
@@ -123,15 +124,16 @@ export function NoticeBoard({
                       >
                         ✏️
                       </button>
-                      <form action={deleteNotice}>
-                        <input type="hidden" name="id" value={n.id} />
-                        <button
-                          className="grid size-7 place-items-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600"
-                          aria-label="Delete"
-                        >
-                          🗑️
-                        </button>
-                      </form>
+                      <ConfirmButton
+                        action={deleteNotice}
+                        fields={{ id: n.id }}
+                        triggerClassName="grid size-7 place-items-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600"
+                        triggerAriaLabel="Delete"
+                        title="নোটিশটি ডিলিট করবেন?"
+                        confirmLabel="ডিলিট করুন"
+                      >
+                        🗑️
+                      </ConfirmButton>
                     </div>
                   )}
                 </div>
