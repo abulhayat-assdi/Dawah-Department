@@ -67,27 +67,31 @@ export async function removeSubmissionFile(formData: FormData) {
   const url = String(formData.get("url"));
   if (!id || !url) return;
 
+  // `select("*")` rather than naming `files`, so this still works against a
+  // database that predates supabase/15_submission_multi_files.sql.
   const { data } = await supabase
     .from("task_submissions")
-    .select("files, file_url")
+    .select("*")
     .eq("id", id)
     .maybeSingle();
   if (!data) return;
 
-  const files = Array.isArray(data.files)
-    ? (data.files as SubmissionFile[]).filter((f) => f?.url !== url)
-    : [];
-  const patch: Record<string, unknown> = { files };
+  const patch: Record<string, unknown> = {};
+  if (Array.isArray(data.files)) {
+    patch.files = (data.files as SubmissionFile[]).filter((f) => f?.url !== url);
+  }
   if (data.file_url === url) {
     patch.file_url = null;
     patch.file_name = null;
   }
 
-  const { error } = await supabase
-    .from("task_submissions")
-    .update(patch)
-    .eq("id", id);
-  if (error) throw new Error(`অ্যাটাচমেন্ট সরানো যায়নি: ${error.message}`);
+  if (Object.keys(patch).length) {
+    const { error } = await supabase
+      .from("task_submissions")
+      .update(patch)
+      .eq("id", id);
+    if (error) throw new Error(`অ্যাটাচমেন্ট সরানো যায়নি: ${error.message}`);
+  }
   await removeObjects(supabase, [url]);
   revalidatePath("/admin/task-report");
   revalidatePath("/my/submissions");
@@ -102,7 +106,7 @@ export async function deleteSubmissionAdmin(formData: FormData) {
 
   const { data } = await supabase
     .from("task_submissions")
-    .select("files, file_url")
+    .select("*")
     .eq("id", id)
     .maybeSingle();
   const urls = [

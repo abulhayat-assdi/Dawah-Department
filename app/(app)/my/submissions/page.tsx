@@ -1,5 +1,6 @@
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { resolveSubmitterCampus } from "@/lib/campus";
 import { Card, CardHeader, PageHeader, EmptyState } from "@/components/ui";
 import { TASK_CLASS_TYPE } from "@/lib/constants";
 import { formatDate, formatMonth, submissionFiles } from "@/lib/utils";
@@ -80,11 +81,9 @@ export default async function MySubmissionsPage() {
     (b) => b.campus_id && myCampusIds.has(b.campus_id),
   );
   // Staff Makeup Class has no batch to derive a campus from — default to the
-  // teacher's own campus so coordinator visibility (RLS scopes by campus_id)
-  // still works.
-  const myCampusId: string | null = myCampusIds.size
-    ? [...myCampusIds][0]
-    : null;
+  // submitter's own campus so coordinator visibility (RLS scopes by campus_id)
+  // still works. Same rule the server action applies, so the two agree.
+  const myCampusId = await resolveSubmitterCampus(supabase, profile, null);
 
   const courses: SubCourseOption[] = ((courseData ?? []) as Course[]).map(
     (c) => ({

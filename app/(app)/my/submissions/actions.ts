@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { notifyPageAudience } from "@/lib/notify";
+import { resolveSubmitterCampus } from "@/lib/campus";
 import { TASK_CLASS_TYPE } from "@/lib/constants";
 import type { TaskClassType } from "@/lib/types";
 
@@ -67,8 +68,17 @@ export async function createSubmission(formData: FormData) {
       resolvedCampus = resolvedCampus ?? (match[0].campus_id as string | null);
     }
   }
+  // Last resort — a Staff class with no matching allocation has no campus of
+  // its own. Never leave this null: coordinator RLS scopes by campus_id, so a
+  // null campus hides the submission from the Task Report of everyone but a
+  // Super Admin.
+  resolvedCampus = await resolveSubmitterCampus(
+    supabase,
+    profile,
+    resolvedCampus,
+  );
 
-  const { error } = await supabase.from("task_submissions").insert({
+  const row = {
     task_id: taskId,
     teacher_id: profile.id,
     class_type: classType,
@@ -86,8 +96,12 @@ export async function createSubmission(formData: FormData) {
         : 0,
     file_url: String(formData.get("file_url") ?? "") || null,
     file_name: String(formData.get("file_name") ?? "") || null,
-    files,
-  });
+  };
+
+  const { error } = await supabase
+    .from("task_submissions")
+    .insert({ ...row, files });
+
   // Never swallow this: a failed insert used to look like a successful
   // submission (the row never reached the Task Report) because the error was
   // discarded. Surface it so the teacher knows the submission did not save.
