@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 // ---------------------------------------------------------------------------
 // Public-site content model. Every public page reads its section from here via
@@ -275,6 +276,16 @@ export const CONTENT_DEFAULTS: SiteContentMap = {
 export async function getContent<K extends keyof SiteContentMap>(
   key: K,
 ): Promise<SiteContentMap[K]> {
+  // Every section ships a full default, so an unconfigured Supabase degrades to
+  // the built-in copy instead of taking the public marketing pages down. Query
+  // errors already surface as empty `data` and fall through to the same merge.
+  if (!isSupabaseConfigured) {
+    console.error(
+      `[content] Supabase is not configured — serving default content for "${key}".`,
+    );
+    return { ...CONTENT_DEFAULTS[key] };
+  }
+
   const supabase = await createClient();
   const { data } = await supabase
     .from("site_content")

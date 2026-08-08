@@ -1,11 +1,20 @@
 import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { getContent } from "@/lib/content";
 import { PublicHero } from "@/components/public-hero";
 import { CampusActivityTabs, type RunningCourseRow } from "@/components/campus-activity-tabs";
 import type { Campus, Course } from "@/lib/types";
 
-export default async function ActivitiesPage() {
-  const [act, supabase] = await Promise.all([getContent("activities"), createClient()]);
+type BatchStat = { course_id: string; active_student_count: number };
+
+async function getCampusActivity(): Promise<{
+  campuses: Campus[];
+  courses: Course[];
+  batches: BatchStat[];
+}> {
+  if (!isSupabaseConfigured) return { campuses: [], courses: [], batches: [] };
+
+  const supabase = await createClient();
   const [{ data: campusData }, { data: courseData }] = await Promise.all([
     supabase.from("campuses").select("*").order("name"),
     // Courses assigned to a campus (via the checkbox grid on Campuses & Courses)
@@ -25,10 +34,21 @@ export default async function ActivitiesPage() {
         .eq("status", "ongoing")
         .is("deleted_at", null)
         .in("course_id", courseIds)
-    : { data: [] as { course_id: string; active_student_count: number }[] };
-  const batches = (batchData ?? []) as { course_id: string; active_student_count: number }[];
+    : { data: [] as BatchStat[] };
 
-  const statsByCourse = new Map<string, { batch_count: number; active_student_count: number }>();
+  return { campuses, courses, batches: (batchData ?? []) as BatchStat[] };
+}
+
+export default async function ActivitiesPage() {
+  const [act, { campuses, courses, batches }] = await Promise.all([
+    getContent("activities"),
+    getCampusActivity(),
+  ]);
+
+  const statsByCourse = new Map<
+    string,
+    { batch_count: number; active_student_count: number }
+  >();
   for (const b of batches) {
     const existing = statsByCourse.get(b.course_id);
     if (existing) {

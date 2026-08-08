@@ -1,17 +1,26 @@
 import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { getContent } from "@/lib/content";
 import { PublicHero } from "@/components/public-hero";
 import { RichText } from "@/components/rich-text";
 import type { SyllabusDocument } from "@/lib/types";
 
-export default async function AcademicPage() {
-  const [ac, supabase] = await Promise.all([getContent("academic"), createClient()]);
-  const { data: syllabusData } = await supabase
+async function getSyllabusDocs(): Promise<SyllabusDocument[]> {
+  if (!isSupabaseConfigured) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
     .from("syllabus_documents")
     .select("*")
     .not("url", "is", null)
     .order("sort_order");
-  const syllabusDocs = (syllabusData ?? []) as SyllabusDocument[];
+  return (data ?? []) as SyllabusDocument[];
+}
+
+export default async function AcademicPage() {
+  const [ac, syllabusDocs] = await Promise.all([
+    getContent("academic"),
+    getSyllabusDocs(),
+  ]);
 
   return (
     <div>
