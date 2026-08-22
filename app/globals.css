@@ -226,3 +226,135 @@ body {
   background: #bcd3c4;
   border-radius: 9999px;
 }
+
+/* ==========================================================================
+   Mobile / installed-app behaviour
+   The site is a PWA (see app/manifest.ts). Everything below exists so that a
+   phone — especially one running it from the home screen, with no browser
+   chrome to fall back on — behaves like a native app rather than a page.
+   ========================================================================== */
+
+/*
+  Notch and home-indicator insets, exposed as variables so components can pad
+  themselves without repeating the env() fallback dance. They resolve to 0 on
+  every device without a cutout, so they are safe to use unconditionally.
+*/
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  /* Height of the mobile tab bar, so content can clear it. */
+  --tab-bar-h: 4rem;
+}
+
+/*
+  A single stray wide element used to scroll the whole document sideways on
+  phones. `clip` rather than `hidden` because `hidden` would turn <body> into
+  a scroll container and break every `position: sticky` header in the app.
+*/
+html,
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+/* Grey flash on every tap reads as "web page", not "app". */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Chrome's viewport meta cannot express this; only the CSS can. */
+body {
+  overscroll-behavior-y: contain;
+  text-size-adjust: 100%;
+}
+
+@media (max-width: 1023px) {
+  /*
+    iOS zooms the whole page in when a focused field is under 16px and then
+    never zooms back out. Bumping the field — not the layout — is the only
+    fix that does not cost pinch-zoom elsewhere.
+  */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
+}
+
+/* Fingers need roughly 44px; a mouse does not. */
+@media (pointer: coarse) and (max-width: 1023px) {
+  button,
+  select,
+  summary,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 40px;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 40px;
+  }
+}
+
+/*
+  Long-press on a nav item should not raise the iOS text-selection loupe or
+  the link preview sheet — native apps do neither.
+*/
+nav a,
+nav button,
+[data-app-chrome] {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/* Only applies once launched from the home screen. */
+@media (display-mode: standalone) {
+  body {
+    /* There is no pull-to-refresh to trigger, so kill the rubber band. */
+    overscroll-behavior: none;
+  }
+
+  /*
+    The installed app is the staff portal only. If a link drops a standalone
+    window onto a marketing page, hide it so nothing flashes while
+    StandaloneGuard redirects to /dashboard. Ordinary browser tabs never match
+    this query, so the public site is unaffected there.
+  */
+  [data-public-site] {
+    display: none;
+  }
+}
+
+/* --- Utilities ----------------------------------------------------------- */
+
+/* Full viewport height that accounts for the mobile URL bar collapsing. */
+.min-h-dvh-safe {
+  min-height: 100vh; /* fallback for browsers without dvh */
+  min-height: 100dvh;
+}
+
+.pt-safe {
+  padding-top: var(--safe-top);
+}
+.pb-safe {
+  padding-bottom: var(--safe-bottom);
+}
+.px-safe {
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+}
+
+/*
+  Horizontal scrollers (tables, chip rows) that should snap and not leak their
+  overscroll into the page behind them.
+*/
+.scroll-x {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}

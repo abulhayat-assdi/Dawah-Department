@@ -1,6 +1,7 @@
 import { requireProfile, allRoles } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app-shell";
+import { PwaProvider } from "@/components/pwa";
 import { resolveNavItems } from "@/lib/nav";
 
 export default async function AppLayout({
@@ -25,8 +26,11 @@ export default async function AppLayout({
   const nav = resolveNavItems(roles, grants);
 
   return (
-    <AppShell profile={profile} navHrefs={nav.map((item) => item.href)}>
-      {children}
-    </AppShell>
+    <>
+      <AppShell profile={profile} navHrefs={nav.map((item) => item.href)}>
+        {children}
+      </AppShell>
+      <PwaProvider />
+    </>
   );
 }

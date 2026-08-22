@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="bn">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b5d3a" />
+    <title>অফলাইন — ADIMS</title>
+    <style>
+      /*
+        Served by the service worker when the network is unreachable, so it has
+        to be entirely self-contained: no build output, no fonts, no images
+        beyond the precached icon.
+      */
+      * { box-sizing: border-box; }
+      html, body { height: 100%; margin: 0; }
+      body {
+        display: grid;
+        place-items: center;
+        padding: 24px calc(24px + env(safe-area-inset-left)) calc(24px + env(safe-area-inset-bottom));
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        color: #f3f8f4;
+        background:
+          radial-gradient(125% 120% at 78% 30%, #1c9357 0%, #0f7344 30%, #0a4f31 56%, #063620 80%, #042417 100%);
+      }
+      .card { max-width: 380px; text-align: center; }
+      img { width: 88px; height: 88px; border-radius: 22px; }
+      h1 { margin: 22px 0 8px; font-size: 22px; font-weight: 700; }
+      p { margin: 0 0 26px; font-size: 15px; line-height: 1.65; color: #c6f0db; }
+      button {
+        min-height: 48px;
+        padding: 0 30px;
+        border: 0;
+        border-radius: 14px;
+        background: #d4af37;
+        color: #063620;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button:active { transform: translateY(1px); }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <img src="/icons/icon-192.png" alt="ADIMS" />
+      <h1>ইন্টারনেট সংযোগ নেই</h1>
+      <p>
+        আপনি বর্তমানে অফলাইনে আছেন। সংযোগ ফিরে এলে নিচের বাটনে চাপ দিয়ে আবার
+        চেষ্টা করুন।
+      </p>
+      <button type="button" onclick="location.reload()">আবার চেষ্টা করুন</button>
+    </div>
+    <script>
+      // Reload by itself the moment connectivity comes back.
+      addEventListener("online", () => location.reload());
+    </script>
+  </body>
+</html>

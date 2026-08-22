@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { clsx } from "@/lib/utils";
+import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { ALL_PAGES } from "@/lib/constants";
 import type { Profile } from "@/lib/types";
 import { allRoles } from "@/lib/roles";
@@ -32,6 +33,34 @@ export function AppShell({
   // Unread counts per sidebar entry; the page you are on clears its own badge.
   const counts = useNavNotificationCounts(profile.id, navHrefs, pathname);
 
+  // The phone tab bar shows the first four entries; "More" opens this drawer
+  // for the rest and carries their combined badge.
+  const tabItems = nav.slice(0, 4);
+  const moreBadge = nav
+    .slice(4)
+    .reduce((total, item) => total + (counts[item.href] ?? 0), 0);
+
+  // A drawer over a still-scrollable page is the classic mobile-web tell, and
+  // on iOS the body scrolls *behind* the overlay under your finger.
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
+
+  // Close the drawer on Escape (hardware keyboards, and desktop parity).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   async function signOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -40,11 +69,13 @@ export function AppShell({
   }
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[264px_1fr]">
+    <div className="min-h-dvh-safe lg:grid lg:grid-cols-[264px_1fr]">
       {/* Sidebar — clean white with colored icons */}
       <aside
+        data-app-chrome
+        aria-label="Sidebar"
         className={clsx(
-          "fixed inset-y-0 left-0 z-40 flex w-[264px] flex-col border-r border-slate-200 bg-white transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-[264px] flex-col border-r border-slate-200 bg-white pb-safe pt-safe transition-transform lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -124,46 +155,79 @@ export function AppShell({
         </div>
       </aside>
 
-      {/* Backdrop on mobile */}
+      {/* Backdrop on mobile — above the tab bar (z-30) so that dims too, but
+          below the drawer itself (z-40). */}
       {open && (
         <div
-          className="fixed inset-0 z-30 bg-brand-900/40 lg:hidden"
+          className="fixed inset-0 z-[35] bg-brand-900/40 lg:hidden"
           onClick={() => setOpen(false)}
         />
       )}
 
       {/* Main column */}
-      <div className="flex min-h-screen flex-col">
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur lg:px-6">
-          <div className="flex items-center gap-3">
-            <button
-              className="grid size-9 place-items-center rounded-xl border border-slate-200 lg:hidden"
-              onClick={() => setOpen(true)}
-              aria-label="Menu"
-            >
-              ☰
-            </button>
-            <h1 className="text-lg font-bold text-slate-900">Internal Portal</h1>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden md:block">
-              <HeaderDateTime />
+      <div className="flex min-h-dvh-safe flex-col">
+        {/*
+          `pt-safe` on the bar and a fixed-height row inside keeps the header
+          exactly 64px tall while still clearing the notch when the app runs
+          full-bleed (viewport-fit=cover).
+        */}
+        <header
+          data-app-chrome
+          className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 px-safe pt-safe backdrop-blur"
+        >
+          <div className="flex h-16 items-center justify-between gap-3 px-4 lg:px-6">
+            <div className="flex items-center gap-3">
+              <button
+                className="grid size-9 place-items-center rounded-xl border border-slate-200 lg:hidden"
+                onClick={() => setOpen(true)}
+                aria-label="Menu"
+                aria-expanded={open}
+              >
+                ☰
+              </button>
+              <h1 className="truncate text-lg font-bold text-slate-900">
+                Internal Portal
+              </h1>
             </div>
-            <div className="flex items-center gap-2.5">
-              <div className="hidden text-right leading-tight sm:block">
-                <p className="text-sm font-semibold text-slate-900">
-                  {profile.full_name || "User"}
-                </p>
-                <RoleBadges roles={allRoles(profile)} className="justify-end" />
+
+            <div className="flex items-center gap-3">
+              <div className="hidden md:block">
+                <HeaderDateTime />
               </div>
-              <Avatar name={profile.full_name} photoUrl={profile.photo_url} size={36} />
+              <div className="flex items-center gap-2.5">
+                <div className="hidden text-right leading-tight sm:block">
+                  <p className="text-sm font-semibold text-slate-900">
+                    {profile.full_name || "User"}
+                  </p>
+                  <RoleBadges roles={allRoles(profile)} className="justify-end" />
+                </div>
+                <Avatar
+                  name={profile.full_name}
+                  photoUrl={profile.photo_url}
+                  size={36}
+                />
+              </div>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 p-4 lg:p-6">{children}</main>
+        {/*
+          The bottom padding clears the fixed phone tab bar (plus the home
+          indicator underneath it); the side padding clears a landscape notch.
+          `lg:p-6` resets all of it once the tab bar is gone.
+        */}
+        <main className="min-w-0 flex-1 p-4 pb-[calc(1rem+var(--tab-bar-h)+var(--safe-bottom))] pl-[calc(1rem+var(--safe-left))] pr-[calc(1rem+var(--safe-right))] lg:p-6">
+          {children}
+        </main>
       </div>
+
+      <MobileTabBar
+        items={tabItems}
+        counts={counts}
+        pathname={pathname}
+        moreBadge={moreBadge}
+        onMore={() => setOpen(true)}
+      />
     </div>
   );
 }

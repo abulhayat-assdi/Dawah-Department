@@ -25,8 +25,8 @@ export function PublicNav({ site }: { site: Site }) {
 
   return (
     <>
-      {/* Top contact bar */}
-      <div className="bg-brand-800 text-white">
+      {/* Top contact bar — also the strip that sits under the phone notch. */}
+      <div className="bg-brand-800 px-safe pt-safe text-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-1.5 text-[11px] lg:px-6">
           <span className="truncate">{site.instituteName}</span>
           <span className="hidden shrink-0 gap-3 text-gold-200 sm:flex">
@@ -38,7 +38,7 @@ export function PublicNav({ site }: { site: Site }) {
       </div>
 
       {/* Main nav */}
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-safe backdrop-blur">
         <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4 lg:px-6">
           <Link href="/" className="flex items-center gap-3">
             <span className="grid size-11 place-items-center rounded-full bg-brand-700 text-xl font-bold text-gold-300 ring-2 ring-gold-400/40">
@@ -115,7 +115,7 @@ export function PublicNav({ site }: { site: Site }) {
 
 export function PublicFooter({ site }: { site: Site }) {
   return (
-    <footer className="border-t border-slate-200 bg-brand-900 text-brand-50">
+    <footer className="border-t border-slate-200 bg-brand-900 px-safe pb-safe text-brand-50">
       <div className="mx-auto max-w-6xl px-4 py-10 lg:px-6">
         <div className="flex flex-col items-center gap-3 text-center">
           <span className="font-arabic text-2xl font-bold text-gold-300">

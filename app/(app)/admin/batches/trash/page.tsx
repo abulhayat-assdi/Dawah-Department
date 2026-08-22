@@ -32,9 +32,11 @@ export default async function BatchTrashPage() {
     ((campusData ?? []) as Campus[]).map((c) => [c.id, c]),
   );
 
+  const now = Date.now();
+
   function daysLeft(deletedAt: string): number {
     const deletedMs = new Date(deletedAt).getTime();
-    const elapsedDays = (Date.now() - deletedMs) / (1000 * 60 * 60 * 24);
+    const elapsedDays = (now - deletedMs) / (1000 * 60 * 60 * 24);
     return Math.max(0, Math.ceil(TRASH_RETENTION_DAYS - elapsedDays));
   }
 

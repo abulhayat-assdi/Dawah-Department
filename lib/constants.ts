@@ -142,30 +142,35 @@ export interface NavItem {
   href: string;
   label: string;
   icon: LucideIcon;
+  /**
+   * One-word label for the phone tab bar, where a full label like "Course
+   * Progress Tracker" would be truncated to noise. Falls back to `label`.
+   */
+  short?: string;
 }
 
-const NAV_1_DASHBOARD: NavItem = { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard };
-const NAV_2_TRACKER: NavItem = { href: "/admin/tracker", label: "Course Progress Tracker", icon: LineChart };
-const NAV_3_TASKS: NavItem = { href: "/admin/tasks", label: "Task Management", icon: ClipboardList };
-const NAV_4_TASK_REPORT: NavItem = { href: "/admin/task-report", label: "Task Report", icon: FileBarChart };
-const NAV_5_MY_TASKS: NavItem = { href: "/my/tasks", label: "My Tasks", icon: ListChecks };
-const NAV_6_ROUTINE: NavItem = { href: "/routine", label: "Campus Routine", icon: CalendarDays };
-const NAV_LESSON_PLAN_ADMIN: NavItem = { href: "/admin/lesson-plan", label: "Weekly Lesson Plan", icon: NotebookPen };
-const NAV_LESSON_PLAN_TEACHER: NavItem = { href: "/my/lesson-plan", label: "Weekly Lesson Plan", icon: NotebookPen };
-const NAV_7_AMALI: NavItem = { href: "/admin/amali", label: "Amali Checklist", icon: BookOpenCheck };
-const NAV_8_SUBMIT_CLASS_TASK: NavItem = { href: "/my/submissions", label: "Submit Class Task", icon: UploadCloud };
-const NAV_9_BATCHES: NavItem = { href: "/admin/batches", label: "Batch Management", icon: FolderKanban };
-const NAV_10_TEACHER_RESOURCES_ADMIN: NavItem = { href: "/admin/teacher-resources", label: "Teacher Resources", icon: BookOpen };
-const NAV_10_TEACHER_RESOURCES_TEACHER: NavItem = { href: "/my/resources", label: "Teacher Resources", icon: BookOpen };
-const NAV_11_CAMPUSES: NavItem = { href: "/admin/campuses", label: "Campuses & Courses", icon: Building2 };
-const NAV_12_COURSES: NavItem = { href: "/admin/courses", label: "Course & Syllabus", icon: GraduationCap };
-const NAV_13_REPORTS: NavItem = { href: "/admin/reports", label: "Reports", icon: FileSpreadsheet };
-const NAV_14_CONTENT: NavItem = { href: "/admin/content", label: "Public Pages", icon: Globe };
-const NAV_15_FACULTY: NavItem = { href: "/admin/faculty", label: "Faculty (Public)", icon: Users2 };
-const NAV_16_FEEDBACK: NavItem = { href: "/admin/feedback", label: "Feedback & Complaints", icon: MessageSquareWarning };
-const NAV_17_ACCESS: NavItem = { href: "/admin/access", label: "Access Management", icon: ShieldCheck };
-const NAV_18_TEACHERS: NavItem = { href: "/admin/teachers", label: "Teachers / Members", icon: Users };
-const NAV_19_PROFILE: NavItem = { href: "/my/profile", label: "My Profile", icon: UserCircle2 };
+const NAV_1_DASHBOARD: NavItem = { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, short: "Home" };
+const NAV_2_TRACKER: NavItem = { href: "/admin/tracker", label: "Course Progress Tracker", icon: LineChart, short: "Tracker" };
+const NAV_3_TASKS: NavItem = { href: "/admin/tasks", label: "Task Management", icon: ClipboardList, short: "Tasks" };
+const NAV_4_TASK_REPORT: NavItem = { href: "/admin/task-report", label: "Task Report", icon: FileBarChart, short: "Report" };
+const NAV_5_MY_TASKS: NavItem = { href: "/my/tasks", label: "My Tasks", icon: ListChecks, short: "My Tasks" };
+const NAV_6_ROUTINE: NavItem = { href: "/routine", label: "Campus Routine", icon: CalendarDays, short: "Routine" };
+const NAV_LESSON_PLAN_ADMIN: NavItem = { href: "/admin/lesson-plan", label: "Weekly Lesson Plan", icon: NotebookPen, short: "Lessons" };
+const NAV_LESSON_PLAN_TEACHER: NavItem = { href: "/my/lesson-plan", label: "Weekly Lesson Plan", icon: NotebookPen, short: "Lessons" };
+const NAV_7_AMALI: NavItem = { href: "/admin/amali", label: "Amali Checklist", icon: BookOpenCheck, short: "Amali" };
+const NAV_8_SUBMIT_CLASS_TASK: NavItem = { href: "/my/submissions", label: "Submit Class Task", icon: UploadCloud, short: "Submit" };
+const NAV_9_BATCHES: NavItem = { href: "/admin/batches", label: "Batch Management", icon: FolderKanban, short: "Batches" };
+const NAV_10_TEACHER_RESOURCES_ADMIN: NavItem = { href: "/admin/teacher-resources", label: "Teacher Resources", icon: BookOpen, short: "Resources" };
+const NAV_10_TEACHER_RESOURCES_TEACHER: NavItem = { href: "/my/resources", label: "Teacher Resources", icon: BookOpen, short: "Resources" };
+const NAV_11_CAMPUSES: NavItem = { href: "/admin/campuses", label: "Campuses & Courses", icon: Building2, short: "Campuses" };
+const NAV_12_COURSES: NavItem = { href: "/admin/courses", label: "Course & Syllabus", icon: GraduationCap, short: "Courses" };
+const NAV_13_REPORTS: NavItem = { href: "/admin/reports", label: "Reports", icon: FileSpreadsheet, short: "Reports" };
+const NAV_14_CONTENT: NavItem = { href: "/admin/content", label: "Public Pages", icon: Globe, short: "Pages" };
+const NAV_15_FACULTY: NavItem = { href: "/admin/faculty", label: "Faculty (Public)", icon: Users2, short: "Faculty" };
+const NAV_16_FEEDBACK: NavItem = { href: "/admin/feedback", label: "Feedback & Complaints", icon: MessageSquareWarning, short: "Feedback" };
+const NAV_17_ACCESS: NavItem = { href: "/admin/access", label: "Access Management", icon: ShieldCheck, short: "Access" };
+const NAV_18_TEACHERS: NavItem = { href: "/admin/teachers", label: "Teachers / Members", icon: Users, short: "Members" };
+const NAV_19_PROFILE: NavItem = { href: "/my/profile", label: "My Profile", icon: UserCircle2, short: "Profile" };
 
 // Super Admin: all 19 spec links, in strict order, full read/write.
 export const ADMIN_NAV: NavItem[] = [

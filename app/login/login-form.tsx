@@ -36,7 +36,7 @@ export function LoginForm() {
   }
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
+    <div className="grid min-h-dvh-safe lg:grid-cols-2">
       {/* Brand panel */}
       <div className="brand-showcase relative hidden flex-col justify-between overflow-hidden p-12 text-white lg:flex">
         {/* Gold "Iqra" (Read) calligraphy watermark */}
@@ -85,8 +85,8 @@ export function LoginForm() {
         </p>
       </div>
 
-      {/* Form panel */}
-      <div className="flex items-center justify-center bg-slate-50 p-6">
+      {/* Form panel — the only panel phones see, so it carries the insets. */}
+      <div className="flex items-center justify-center bg-slate-50 p-6 pb-[calc(1.5rem+var(--safe-bottom))] pl-[calc(1.5rem+var(--safe-left))] pr-[calc(1.5rem+var(--safe-right))] pt-[calc(1.5rem+var(--safe-top))]">
         <div className="w-full max-w-sm">
           <div className="mb-8 text-center lg:hidden">
             <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-brand-800 text-2xl text-gold-300">
