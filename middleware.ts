@@ -1,8 +1,8 @@
 import { type NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/proxy";
+import { updateSession } from "@/lib/supabase/middleware";
 
-// Next.js 16: the `middleware` convention was renamed to `proxy` (nodejs runtime).
-export async function proxy(request: NextRequest) {
+// Next.js 16: using Edge Middleware instead of Node.js proxy to support Cloudflare
+export async function middleware(request: NextRequest) {
   return updateSession(request);
 }
 

@@ -16,7 +16,7 @@ function isPublicPath(path: string) {
 
 /**
  * Refreshes the Supabase auth session on every request and guards routes.
- * Called from the root `proxy.ts` (the Next.js 16 replacement for middleware).
+ * Called from the root `middleware.ts` (the Edge Middleware).
  */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
